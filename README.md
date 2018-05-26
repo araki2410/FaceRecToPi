@@ -28,3 +28,12 @@ $ make -j4 \
 (It takes 2 to 5 hours. Watch https://www.youtube.com/movies) \
 $ sudo make install
 
+--------------------
+# Install python modules
+## scipy
+## tensorflow \
+$ wget https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl \
+
+"tensorflow-on-raspberry-pi", [https://github.com/samjabrahams/tensorflow-on-raspberry-pi/] \
+"Raspberry Pi に python3 用の　tensorflow をインストール", [https://qiita.com/ekzemplaro/items/553db4c229632af79607] \
+"pipのパッケージのインストール先について"(pip version?), [https://teratail.com/questions/9769] \
