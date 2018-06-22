@@ -33,7 +33,10 @@ $ sudo make install
 https://github.com/davidsandberg/facenet \
 "20180408-102900	0.9905	CASIA-WebFace	Inception ResNet v1",(https://drive.google.com/open?id=1R77HmFADxe87GmoLwzfgMu_HY0IhcyBz)
 # Install python modules
-## numpy, scipy, pickle
+## numpy, scipy, pickle, sklearn
+$ pip3 install numpy \
+. \
+. \
 ## tensorflow 
 $ wget https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl \
 $ pip3 install tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl \
