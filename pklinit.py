@@ -100,8 +100,8 @@ def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
         img_paths_list.append(image_paths[i])
         img = misc.imread(os.path.expanduser(image_paths[i]))
         img_size = np.asarray(img.shape)[0:2]
-        try:
-            bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
+        try: 
+            bounding_boxes, _ = facenets.src.align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
             det = np.squeeze(bounding_boxes[0,0:4])
             bb = np.zeros(4, dtype=np.int32)
             bb[0] = np.maximum(det[0]-margin/2, 0)
@@ -116,7 +116,7 @@ def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
             extracted_filepaths.append(image_paths[i])
         except:
             print("cannot extract_image_align")
-
+            
     image = np.stack(img_list)
     return image, extracted_filepaths
 

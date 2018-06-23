@@ -72,25 +72,28 @@ def save_embs(embs, paths):
     # 特徴量の取得
     pkl_path = "img_facenet.pkl"
 
-    with open(pkl_path, 'rb') as f:
+    # with open(pkl_path, 'rb') as f:
+    #     data = pickle.load(f)
+    # f.close()
+    f = open(pkl_path, 'rb')
+    if sys.version_info.major == 2:
         data = pickle.load(f)
-    f.close
+    elif sys.version_info.major == 3:
+        data = pickle.load(f, encoding='latin-1')
+    f.close()
+                           
     for i in paths:
         imglist.append(i.split('/')[-1])
-    print(imglist)
     reps = {}
     for i, (emb, path) in enumerate(zip(embs, paths)):
-        #print('%1d: %s' % (i, paths))
-        #print(emb)
         try:
             basename = os.path.basename(path)
             reps[basename] = emb
-           
-#            print(basename, scipy.spatial.distance.euclidean(data["akaruiaraki.jpg"], emb))
         except:
             print('error %1d: %s' % (i, path) )
     # 特徴量の保存
     with open(pkl_path, 'wb') as f:
+        reps.update(data)
         pickle.dump(reps, f)
 
 def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
@@ -157,39 +160,5 @@ if __name__ == '__main__':
     main(parse_arguments(sys.argv[1:]))
 
 # Measure the distance to Input_image with Collected_features
-facenet.detection("TV.jpg") # input argv[1]
+facenet.detection(imglist[0]) # input argv[1]
 
-exit()
-
-#from scipy import spatial
-pkl_path = "img_facenet.pkl"
-
-with open(pkl_path, 'rb') as f:
-    data = pickle.load(f)
-
-print(img_paths_list)
-for i in img_paths_list:
-    imglist.append(i.split('/')[-1])
-#print(imglist)
-
-# A = data[img_paths_list[0].split('/')[-1]]
-# B = data[img_paths_list[1].split('/')[-1]]
-
-# print("A,B")
-# print(scipy.spatial.distance.euclidean(A, B))
-# print("A,C")
-# print(scipy.spatial.distance.euclidean(A, C))
-
-
-for i in imglist:
-    distance[i] = scipy.spatial.distance.euclidean(data[i], data[imglist[-1]])
-#    print(i)
-#    print(scipy.spatial.distance.euclidean(data[i], data[imglist[-1]]))
-
-for j,k in sorted(distance.items(), key=lambda x:x[1]):
-    print(k,"\t",j)
-    if k > 0 and k < 1:
-        likelist.append(j)
-
-print(likelist)
-#print("Inputed image is like %s"%)
