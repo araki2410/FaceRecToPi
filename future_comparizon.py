@@ -1,4 +1,4 @@
-#!/usr/bin/python3.4
+#!/usr/bin/python3
 # -*- coding:utf-8 -*-
 
 from __future__ import absolute_import
@@ -7,7 +7,7 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import sys
-sys.path.append("/home/yanai-lab/araki-t/Git/facenet/src/")
+#sys.path.append("/home/yanai-lab/araki-t/Git/facenet/src/")
 import os
 import argparse
 import facenet
@@ -40,8 +40,11 @@ def main(args):
         with tf.Session() as sess:
 
             # Load the model
-            facenet.load_model(model)
-
+            try:
+                facenet.load_model(model)
+            except:
+                print("No such models, add auguments: --model [model name]")
+                exit()
             # Get input and output tensors
             images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
             embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
