@@ -13,7 +13,7 @@ import facenet
 import facenets.src.align.detect_face
 import pickle, scipy
 from scipy import misc
-from time import sleep
+import time
 
 img_paths_list = [] #{./Face/image1, ./Face/image2,...}
 imglist = [] # {image1,image2,image....}
@@ -21,7 +21,9 @@ imglist = [] # {image1,image2,image....}
 #likelist = [] # alike image
 
 def main(args):
+    ######## Tensor flow
     args_filepaths = args.image_files
+    print(args_filepaths)
     image_size = args.image_size
     margin = args.margin
     gpu_memory_fraction = args.gpu_memory_fraction
@@ -42,29 +44,106 @@ def main(args):
             except:
                 print("No such models, add auguments: --model [model name]")
                 exit()
-            # Get input and output tensors
-            images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
-            embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
-            phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
-            print("\n\n",args_filepaths,"\n\n")
-            capture_cam()
+            #
+
+            ###### Capture Camra
+            # 定数定義
+            ESC_KEY = 27     # Escキー
+            INTERVAL= 33     # 待ち時間
+            FRAME_RATE = 10  # fps
+
+            ORG_WINDOW_NAME = "CAP"
+            # GAUSSIAN_WINDOW_NAME = "gaussian"
+
+            DEVICE_ID = 0
+    #        i = 0
+            # 分類器の指定
+            cascade_file = "./Models/haarcascade_frontalface_alt2.xml"
+            cascade = cv2.CascadeClassifier(cascade_file)
+
+            # カメラ映像取得
+            cap = cv2.VideoCapture(DEVICE_ID)
+            cap_width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+            cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            cap_rate = 0.125
+            size = (int(cap_width * cap_rate), int(cap_height * cap_rate)) # size=(320,240)
+            print(size)
+            # 初期フレームの読込
+            try:
+                end_flag, c_frame = cap.read()
+                c_frame = cv2.resize(c_frame, size)
+                #height, width, channels = c_frame.shape
+            except:
+                print("device error: Please Try again")
+                exit()
+            # ウィンドウの準備
+            cv2.namedWindow(ORG_WINDOW_NAME)
+            # cv2.namedWindow(GAUSSIAN_WINDOW_NAME)
+    
+            # 変換処理ループ
+            while end_flag == True:
+
+            # 画像の取得と顔の検出
+                img = c_frame
+                img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                face_list = cascade.detectMultiScale(img_gray, minSize=(120, 120))
+        
+            # 検出した顔に印を付ける
+                for (x, y, w, h) in face_list:
+                    cv2.imwrite(args_filepaths,img)
+                    time.sleep(1)
+                    color = (0, 0, 225)
+                    pen_w = 3
+                    # cv2.rectangle(img_gray, (x, y), (x+w, y+h), color, thickness = pen_w)
+                    cv2.rectangle(img, (x, y), (x+w, y+h), color, thickness = pen_w)
+                    # break
+
+                    #####################
+                    ## Tensorflow
             
-            for i in range(0, len(args_filepaths), batch_size):
-                target_filepaths = args_filepaths[i:i+batch_size]
-                print(target_filepaths)
-                print("target_filepaths len:{}".format(len(target_filepaths)))
-                images, target_filepaths = load_and_align_data(target_filepaths, image_size, margin, gpu_memory_fraction)
+                    # Get input and output tensors
+                    images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
+                    embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
+                    phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
+                    print("\n\n",args_filepaths,"\n\n")
+            
+                    for i in range(0, len(args_filepaths), batch_size):
+                        target_filepaths = args_filepaths[i:i+batch_size]
+                        print(target_filepaths)
+                        #print("target_filepaths len:{}".format(len(target_filepaths)))
+                        images, target_filepaths = load_and_align_data(target_filepaths, image_size, margin, gpu_memory_fraction)
 
-                # Run forward pass to calculate embeddings
-                feed_dict = { images_placeholder: images, phase_train_placeholder:False }
-                emb = sess.run(embeddings, feed_dict=feed_dict)
-                print("emb len:{}".format(len(emb)))
+                        # Run forward pass to calculate embeddings
+                        feed_dict = { images_placeholder: images, phase_train_placeholder:False }
+                        emb = sess.run(embeddings, feed_dict=feed_dict)
+                        print("emb len:{}".format(len(emb)))
+                        
+                        for j in range(len(target_filepaths)):
+                            print(target_filepaths[j])
+                            extracted_filepaths.append(target_filepaths[j])
+                            embs.append(emb[j, :])
+                           # print(target_filepaths[j])
+                    save_embs(embs, extracted_filepaths)
+#                    print(os.path.basename(target_filepaths[0]))
+                    facenet.detection(os.path.basename(target_filepaths[0])) #argv[1] #after your task, not only one shot.
 
-                for j in range(len(target_filepaths)):
-                    extracted_filepaths.append(target_filepaths[j])
-                    embs.append(emb[j, :])
-#                    print(target_filepaths[j])
-    save_embs(embs, extracted_filepaths)  
+                    #####################
+                    ####################
+                    
+                # フレーム表示
+                cv2.imshow(ORG_WINDOW_NAME, c_frame)
+                # cv2.imshow(GAUSSIAN_WINDOW_NAME, img_gray)
+                # Escキーで終了
+                key = cv2.waitKey(INTERVAL)
+                if key == ESC_KEY:
+                    break
+                # 次のフレーム読み込み
+                end_flag, c_frame = cap.read()
+
+            # 終了処理
+            cv2.destroyAllWindows()
+            cap.release()
+
 
 
 def save_embs(embs, paths):
@@ -92,10 +171,11 @@ def save_embs(embs, paths):
             print('error %1d: %s' % (i, path) )
     # 特徴量の保存
     with open(pkl_path, 'wb') as f:
-        reps.update(data)
-        pickle.dump(reps, f)
+        data.update(reps)
+        pickle.dump(data, f)
 
 def load_and_align_data(image_path, image_size, margin, gpu_memory_fraction):
+    default_error = ([], image_path)
     # 処理が正常に行えた画像パス
     extracted_filepaths = []
     minsize = 20 # minimum size of face
@@ -113,30 +193,38 @@ def load_and_align_data(image_path, image_size, margin, gpu_memory_fraction):
 #    nrof_samples = len(image_path)
     img_list = [] #[None] * nrof_samples
 #    for i in range(nrof_samples):
-    print(image_path)
+#    print(image_path)
     img_paths_list.append(image_path)
     img = misc.imread(os.path.expanduser(image_path))
     img_size = np.asarray(img.shape)[0:2]
+    # Try Detect to face And Crop face image!
+    bounding_boxes, _ = facenets.src.align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
     try:
-        # Try Detect to face And Crop face image!
-        bounding_boxes, _ = facenets.src.align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
         det = np.squeeze(bounding_boxes[0,0:4])
-        bb = np.zeros(4, dtype=np.int32)
-        bb[0] = np.maximum(det[0]-margin/2, 0)
-        bb[1] = np.maximum(det[1]-margin/2, 0)
-        bb[2] = np.minimum(det[2]+margin/2, img_size[1])
-        bb[3] = np.minimum(det[3]+margin/2, img_size[0])
-        cropped = img[bb[1]:bb[3],bb[0]:bb[2],:]
-        aligned = misc.imresize(cropped, (image_size, image_size), interp='bilinear')
+    except:
+        print("No face")
+        return default_error
+    
+    bb = np.zeros(4, dtype=np.int32)
+    bb[0] = np.maximum(det[0]-margin/2, 0)
+    bb[1] = np.maximum(det[1]-margin/2, 0)
+    bb[2] = np.minimum(det[2]+margin/2, img_size[1])
+    bb[3] = np.minimum(det[3]+margin/2, img_size[0])
+    cropped = img[bb[1]:bb[3],bb[0]:bb[2],:]
+    aligned = misc.imresize(cropped, (image_size, image_size), interp='bilinear')
+    try:
         prewhitened = facenet.prewhiten(aligned)
         img_list.append(prewhitened)
         extracted_filepaths.append(image_path)
     except:
         print("cannot extract_image_align")
-        exit()
+        return default_error
         
     image = np.stack(img_list)
     return image, extracted_filepaths
+
+
+
 
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
@@ -155,93 +243,5 @@ def parse_arguments(argv):
 
 
 
-#if __name__ == '__main__':
-#    oldmain(parse_arguments(sys.argv[1:]))
-
-# Measure the distance to Input_image with Collected_features
-#facenet.detection(imglist[0]) # input argv[1]
-
-
-
-
-
-
-
-
-
-
-def capture_cam():
-    # 定数定義
-    ESC_KEY = 27     # Escキー
-    INTERVAL= 33     # 待ち時間
-    FRAME_RATE = 10  # fps
-
-    ORG_WINDOW_NAME = "CAP"
-    GAUSSIAN_WINDOW_NAME = "gaussian"
-
-    DEVICE_ID = 0
-
-    # 分類器の指定
-    cascade_file = "./Models/haarcascade_frontalface_alt2.xml"
-    cascade = cv2.CascadeClassifier(cascade_file)
-
-    # カメラ映像取得
-    cap = cv2.VideoCapture(DEVICE_ID)
-    cap_width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_rate = 0.125
-    size = (int(cap_width * cap_rate), int(cap_height * cap_rate)) # size=(320,240)
-    print(size)
-    # 初期フレームの読込
-    try:
-        end_flag, c_frame = cap.read()
-        c_frame = cv2.resize(c_frame, size)
-        #height, width, channels = c_frame.shape
-    except:
-        print("device error: Please Try again")
-        exit()
-    # ウィンドウの準備
-    cv2.namedWindow(ORG_WINDOW_NAME)
-#    cv2.namedWindow(GAUSSIAN_WINDOW_NAME)
-
-    # 変換処理ループ
-    while end_flag == True:
-
-        # 画像の取得と顔の検出
-        img = c_frame
-        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        face_list = cascade.detectMultiScale(img_gray, minSize=(100, 100))
-        
-        # 検出した顔に印を付ける
-        for (x, y, w, h) in face_list:
-            cv2.imwrite("./Img/cap.jpg",img)
-            return 0
-            #oldmain(parse_arguments(sys.argv[1:]), "./Img/cap.jpg")
-            # facenet.detection(imglist[0]) # input argv[1]
-  #          sleep(10)
-            #print(img)
-            color = (0, 0, 225)
-            pen_w = 3
-#            cv2.rectangle(img_gray, (x, y), (x+w, y+h), color, thickness = pen_w)
-            cv2.rectangle(img, (x, y), (x+w, y+h), color, thickness = pen_w)
-
-        # フレーム表示
-        cv2.imshow(ORG_WINDOW_NAME, c_frame)
-#        cv2.imshow(GAUSSIAN_WINDOW_NAME, img_gray)
-        # Escキーで終了
-        key = cv2.waitKey(INTERVAL)
-        if key == ESC_KEY:
-            break
-
-        # 次のフレーム読み込み
-        end_flag, c_frame = cap.read()
-
-    # 終了処理
-    cv2.destroyAllWindows()
-    cap.release()
-
-
 if __name__ == '__main__':
-    #capture_cam()
     main(parse_arguments(sys.argv[1:]))
-    facenet.detection(imglist[0]) # input argv[1]
