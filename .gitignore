@@ -1,9 +1,6 @@
 model-*
 *.pb
 *~
-<<<<<<< HEAD
 facenet/*
 Img/*_*.jpg
-=======
-facenet/*
->>>>>>> 5b839fac0caded05cf03906985becd15b67ff2db
+facenets
