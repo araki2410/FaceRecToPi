@@ -4,3 +4,5 @@ model-*
 facenet/*
 Img/*_*.jpg
 facenets/*
+facenets/*/*
+facenets/*/*/*/*
