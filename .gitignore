@@ -2,3 +2,4 @@ model-*
 *.pb
 *~
 facenet/*
+Img/*_*.jpg
