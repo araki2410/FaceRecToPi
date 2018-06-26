@@ -65,7 +65,7 @@ def main(args):
             cap = cv2.VideoCapture(DEVICE_ID)
             cap_width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
             cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-            cap_rate = 0.125
+            cap_rate = 0.25
             size = (int(cap_width * cap_rate), int(cap_height * cap_rate)) # size=(320,240)
             print(size)
             # 初期フレームの読込
@@ -175,7 +175,7 @@ def save_embs(embs, paths):
         pickle.dump(data, f)
 
 def load_and_align_data(image_path, image_size, margin, gpu_memory_fraction):
-    default_error = ([], image_path)
+    default_error = ([[[]]], image_path)
     # 処理が正常に行えた画像パス
     extracted_filepaths = []
     minsize = 20 # minimum size of face

@@ -584,7 +584,7 @@ def detection(input_img):
         data = pickle.load(f)#, encoding="bytes")
         
     for i,j in data.items():
-        print(i)
+        #print(i)
         img_list.append(i)
     for i in img_list:
         print(i)
@@ -594,4 +594,3 @@ def detection(input_img):
         print(k,"\t",j)
         if k > 0 and k < 1:
             likelist.append(j)
-

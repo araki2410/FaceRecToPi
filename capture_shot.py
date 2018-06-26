@@ -3,10 +3,17 @@
 
 # """https://qiita.com/mix_dvd/items/98feedc8c98bc7790b30"""
 
-import cv2
+import cv2, sys
 from time import sleep
 
 if __name__ == '__main__':
+    try:
+        image_path = sys.argv[1]
+    except:
+        image_path = "Img/cap.jpg"
+
+    print(image_path)
+#    exit()
     # 定数定義
     ESC_KEY = 27     # Escキー
     INTERVAL= 33     # 待ち時間
@@ -47,8 +54,8 @@ if __name__ == '__main__':
         
         # 検出した顔に印を付ける
         for (x, y, w, h) in face_list:
-            cv2.imwrite("./Img/cap.jpg", img)
-            sleep(0.5)
+            cv2.imwrite(image_path, img)
+#            sleep(0.5)
             color = (0, 0, 225)
             pen_w = 3
 #            cv2.rectangle(img_gray, (x, y), (x+w, y+h), color, thickness = pen_w)
