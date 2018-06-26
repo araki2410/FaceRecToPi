@@ -65,7 +65,7 @@ def main(args):
             cap = cv2.VideoCapture(DEVICE_ID)
             cap_width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
             cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-            cap_rate = 0.25
+            cap_rate = 0.0625
             size = (int(cap_width * cap_rate), int(cap_height * cap_rate)) # size=(320,240)
             print(size)
             # 初期フレームの読込
@@ -86,7 +86,7 @@ def main(args):
             # 画像の取得と顔の検出
                 img = c_frame
                 img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                face_list = cascade.detectMultiScale(img_gray, minSize=(120, 120))
+                face_list = cascade.detectMultiScale(img_gray, minSize=(110, 110))
         
             # 検出した顔に印を付ける
                 for (x, y, w, h) in face_list:
@@ -111,8 +111,10 @@ def main(args):
                         target_filepaths = args_filepaths[i:i+batch_size]
                         print(target_filepaths)
                         #print("target_filepaths len:{}".format(len(target_filepaths)))
-                        images, target_filepaths = load_and_align_data(target_filepaths, image_size, margin, gpu_memory_fraction)
-
+                        try:
+                            images, target_filepaths = load_and_align_data(target_filepaths, image_size, margin, gpu_memory_fraction)
+                        except:
+                            pass
                         # Run forward pass to calculate embeddings
                         feed_dict = { images_placeholder: images, phase_train_placeholder:False }
                         emb = sess.run(embeddings, feed_dict=feed_dict)
@@ -125,6 +127,7 @@ def main(args):
                            # print(target_filepaths[j])
                     save_embs(embs, extracted_filepaths)
 #                    print(os.path.basename(target_filepaths[0]))
+                    
                     facenet.detection(os.path.basename(target_filepaths[0])) #argv[1] #after your task, not only one shot.
 
                     #####################
@@ -175,7 +178,7 @@ def save_embs(embs, paths):
         pickle.dump(data, f)
 
 def load_and_align_data(image_path, image_size, margin, gpu_memory_fraction):
-    default_error = ([[[]]], image_path)
+    default_error = ([[[]]], image_path) # not correct 
     # 処理が正常に行えた画像パス
     extracted_filepaths = []
     minsize = 20 # minimum size of face
