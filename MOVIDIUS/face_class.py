@@ -4,133 +4,48 @@
 import cv2
 import tkinter as tk
 import tkinter
-from tkinter import ttk
 import cv2
 import PIL.Image, PIL.ImageTk
 import time
 from mvnc import mvncapi as mvnc
 import numpy
-import sys, os
+import cv2
+import sys
+import os
 import pickle
 from time import sleep, gmtime, strftime
 
 class App:
     def __init__(self, window, window_title, video_source=0):
-        self.top_name = "none..."
         self.window = window
         self.window.title(window_title)
         self.window.attributes("-zoomed",True)
-#        self.window.attributes("-fullscreen",True)
         self.video_source = video_source
+
         # open video source (by default this will try to open the computer webcam)
         self.vid = MyVideoCapture(self.video_source)
-        # facenet
-        self.f_net =Facenet()
 
-        # ret, c_frame = self.vid.get_frame()
-        # self.f_net.face_rec(ret, c_frame, top_name)
-        
         # Create a canvas that can fit the above video source size
-        self.x, self.y = 280, 210
-        self.canvas = tk.Canvas(window, width=self.x, height=self.y, bg="blue")
-        self.canvas.grid(row=0, column=0)
-        self.capture = tk.Canvas(window, width=self.x, height=self.y, bg="navy")
-        self.capture.grid(row=1, column=0)
-        #self.capturelab = tk.Label(window, bg="navy")
-        #self.capturelab.grid(row=1, column=0)
+        self.canvas = tkinter.Canvas(window, width = 320, height = 240)
+                                     #self.vid.width, height = self.vid.height)
+        self.canvas.pack()
 
-        self.namelab = tk.Label(window, text="", bg="yellow")
-        self.namelab.grid(row=0, column=1)
-
-
-        ### frame in frame
-        self.register = {}   # {"juntoku eri": "準得 映理"}
-        with open("register", "r") as f:
-            #    i = [j.strip() for j in l.readlines()]
-            i = f.readlines()
-            for j in i:
-                try:
-                    n,m = j.split(",")
-                    self.register[n] = m.strip()
-                except:
-                    pass
-            #    print(register)
-            self.options = list(self.register.values())
-        f.close
-
-        self.btn_f = tk.Frame(window, relief=tkinter.RIDGE, bd=2)
-        self.filename_form = tk.Entry(self.btn_f)
-        self.jp_form = tk.Entry(self.btn_f)
         # Button that lets the user take a snapshot
-        self.btn_snapshot=tk.Button(self.btn_f, text="撮影", command=self.snapshot,font=("", 20))#, width=50)
-        self.btn_snapshot.grid(row=0, column=2, rowspan=2) #.pack(anchor=tkinter.CENTER, expand=True)
-        self.btn_save=tk.Button(self.btn_f, text="新規保存", command=self.add_register,font=("", 20))
-        self.btn_save.grid(row=3, column=2, rowspan=2) #.pack(anchor=tk.CENTER, expand=True)
+        self.btn_snapshot=tkinter.Button(window, text="Snapshot", width=50, command=self.snapshot)
+        self.btn_snapshot.pack(anchor=tkinter.CENTER, expand=True)
 
-        self.selectlabel = tk.Label(self.btn_f, text="選択")
-        self.selectlabel.grid(row=0,column=0)
-        self.savedlabel = tk.Label(self.btn_f, text="")
-        self.savedlabel.grid(row=1, column=0, columnspan=2)
-        self.jplabel = tk.Label(self.btn_f, text="田中太郎")
-        self.jplabel.grid(row=3,column=0)
-        self.filelabel = tk.Label(self.btn_f, text="tanakataro")
-        self.filelabel.grid(row=4, column=0)
-        self.filename_form.grid(row=4, column=1)
-        self.jp_form.grid(row=3, column=1)
-        self.selection = ttk.Combobox(self.btn_f, state="readonly",font=("", 15))
-        self.selection["values"]=self.options
-        self.selection.set("noname")
-        self.selection.grid(row=0, column=1)
-        self.btn_f.grid(row=1, column=1)
-
-        
         # After it is called once, the update method will be automatically called every delay milliseconds
         self.delay = 15
         self.update()
 
         self.window.mainloop()
 
-    def add_register(self):
-        corename = self.filename_form.get()
-        valuename = self.jp_form.get()
-        if corename=="" or valuename=="":
-            #no input
-            pass
-        elif self.register.get(corename):
-            #保存済のfilename
-            pass
-        else:
-            self.register[corename]=valuename
-            with open("register", "a") as f:
-                f.write("\n" + corename + "," + valuename)
-            f.close
-            self.selection["values"]=list(self.register.values())
-            self.selection.set(valuename)
-            self.selection.grid(row=0, column=1)
-
-  
     def snapshot(self):
         # Get a frame from the video source
         ret, frame = self.vid.get_frame()
-        name = self.selection.get()
-        corename = [k for k, v in self.register.items() if v == name]
-        if len(corename) == 0:
-            ret = False
-#        cv2.imwrite("./Img/" + text + "_" + time.strftime("%Y%m%d%H%M%S") + ".jpg", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
-        #print("./Img/" + text + "_" + time.strftime("%Y%m%d%H%M%S") + ".jpg")
+
         if ret:
-            fret, _, frame = self.f_net.face_rec(ret, frame)
-            frame = cv2.resize(frame, (self.x, self.y))
-            if fret:
-                savename =("./Img/Crop/Color/" + corename[0] + "_" + time.strftime("%Y%m%d%H%M%S") + ".jpg")
-                cv2.imwrite(savename, cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
-                self.savedlabel = tk.Label(self.btn_f, text=savename)
-                self.savedlabel.grid(row=1, column=0, columnspan=2)
-
-                self.shot = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
-                self.capture.create_image(0, 0, image = self.shot, anchor = tkinter.NW)
-
-
+            cv2.imwrite("frame-" + time.strftime("%d-%m-%Y-%H-%M-%S") + ".jpg", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
             
     def cap_frame(self):
         # Get a frame from the video source
@@ -143,16 +58,11 @@ class App:
     def update(self):
         # Get a frame from the video source
         ret, frame = self.vid.get_frame()
-        fret, top_fname, frame = self.f_net.face_rec(ret, frame)
-        frame = cv2.resize(frame, (self.x, self.y))
+
         if ret:
             self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
             self.canvas.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
-        if fret:
-            self.top_name = self.register.get(top_fname,"Nodata")
-            self.namelab = tk.Label(self.window, text=self.top_name, bg="yellow", font=("", 20))
-            self.namelab.grid(row=0, column=1, sticky=tk.W+tk.E)
-            
+
         self.window.after(self.delay, self.update)
 
 
@@ -185,8 +95,9 @@ class MyVideoCapture:
 
 
 
+            
 class Facenet:
-    def save_emb(self, emb, path):
+    def save_emb(emb, path):
         # 特徴量の取得
         reps = {}                       
 
@@ -200,7 +111,7 @@ class Facenet:
         #     data = pickle.load(f)
         # f.close()
         try:
-            f = open(self.PKL_PATH, 'rb')
+            f = open(PKL_PATH, 'rb')
             if sys.version_info.major == 2:
                 data = pickle.load(f)
             elif sys.version_info.major == 3:
@@ -208,12 +119,12 @@ class Facenet:
             f.close()
         except:
             data = {}
-            g = open(self.PKL_PATH, 'wb')
+            g = open(PKL_PATH, 'wb')
             pickle.dump(data, g)
             g.close
 
         # 特徴量の保存
-        with open(self.PKL_PATH, 'wb') as f:
+        with open(PKL_PATH, 'wb') as f:
             reps.update(data)
             pickle.dump(reps, f)
 
@@ -223,11 +134,11 @@ class Facenet:
     #    and labels identifying the found objects within the image.
     # ssd_mobilenet_graph is the Graph object from the NCAPI which will
     #    be used to peform the inference.
-    def run_inference(self, image_to_classify, facenet_graph):
+    def run_inference(image_to_classify, facenet_graph):
 
         # get a resized version of the image that is the dimensions
         # SSD Mobile net expects
-        resized_image = self.preprocess_image(image_to_classify)
+        resized_image = preprocess_image(image_to_classify)
 
         #cv2.imshow("preprocessed", resized_image)
 
@@ -251,7 +162,7 @@ class Facenet:
     # image info is a text string to overlay onto the image.
     # matching is a Boolean specifying if the image was a match.
     # returns None
-    def overlay_on_image(self, display_image, image_info, matching):
+    def overlay_on_image(display_image, image_info, matching):
         rect_width = 10
         offset = int(rect_width/2)
         if (image_info != None):
@@ -269,7 +180,7 @@ class Facenet:
 
 
     # whiten an image
-    def whiten_image(self, source_image):
+    def whiten_image(source_image):
         source_mean = numpy.mean(source_image)
         source_standard_deviation = numpy.std(source_image)
         std_adjusted = numpy.maximum(source_standard_deviation, 1.0 / numpy.sqrt(source_image.size))
@@ -278,7 +189,7 @@ class Facenet:
 
     # create a preprocessed image from the source image that matches the
     # network expectations and return it
-    def preprocess_image(self, src):
+    def preprocess_image(src):
         # scale the image
         NETWORK_WIDTH = 160
         NETWORK_HEIGHT = 160
@@ -288,7 +199,7 @@ class Facenet:
         preprocessed_image = cv2.cvtColor(preprocessed_image, cv2.COLOR_BGR2RGB)
 
         #whiten
-        preprocessed_image = self.whiten_image(preprocessed_image)
+        preprocessed_image = whiten_image(preprocessed_image)
 
         # return the preprocessed image
         return preprocessed_image
@@ -317,7 +228,7 @@ class Facenet:
     # determine if two images are of matching faces based on the
     # the network output for both images.
     ### Return distance
-    def face_match_dist(self, face1_output, face2_output):
+    def face_match_dist(face1_output, face2_output):
         if (len(face1_output) != len(face2_output)):
             print('length mismatch in face_match')
             # return False
@@ -342,17 +253,17 @@ class Facenet:
         return True
 
 
-    def run_images(self, valid_output, validated_image_filename, graph, input_image_filename_list):
+    def run_images(valid_output, validated_image_filename, graph, input_image_filename_list):
         #cv2.namedWindow(CV_WINDOW_NAME)
         distance_list = {}
         for input_image_file in input_image_filename_list :
         
             try:
-                f = open(self.PKL_PATH, 'rb')
+                f = open(PKL_PATH, 'rb')
                 data = pickle.load(f)
             except:
                 data = {}
-                g = open(self.PKL_PATH, 'wb')
+                g = open(PKL_PATH, 'wb')
                 pickle.dump(data, g)
                 g.close
 
@@ -365,13 +276,13 @@ class Facenet:
                 infer_image = cv2.imread(input_image_file)
                 # run a single inference on the image and overwrite the
                 # boxes and labels
-                test_output = self.run_inference(infer_image, self.graph)
+                test_output = run_inference(infer_image, graph)
                 print("save!" + input_image_file_name)
-                self.save_emb(test_output, input_image_file)
+                save_emb(test_output, input_image_file)
 
 
                 
-            distance_list[input_image_file] = self.face_match_dist(valid_output, test_output)
+            distance_list[input_image_file] = face_match_dist(valid_output, test_output)
 
         distance_list = sorted(distance_list.items(), key=lambda x:x[1])  # transed to list object
         #    print(distance_list)
@@ -380,10 +291,9 @@ class Facenet:
         cv2.imshow("1st", top_image)
         top_name = top_image_name.split("/")[-1].split("_")[0]
         try:
-            return(top_name)
+            print(register[top_name])
         except:
-            #print("who is he? I have image but have not data of " + top_name)
-            return("No data")
+            print("who is he? I have image but have not data of " + top_name)
             ###
             ### input data to register here
             ###
@@ -394,52 +304,31 @@ class Facenet:
             top3_image_name = top_image_name +", "+ sec_image_name +", "+ thr_image_name
             sec_image = cv2.imread(sec_image_name)
             thr_image = cv2.imread(thr_image_name)
-            # cv2.imshow("2nd", sec_image)
-            # cv2.imshow("3rd", thr_image)
+            cv2.imshow("2nd", sec_image)
+            cv2.imshow("3rd", thr_image)
 #        print(top3_image_name)
 #    cv2.waitKey(0)
 
         # cv2.putText(infer_image, match_text + " - Hit key for next.", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
 
-    def face_rec(self, ret, c_frame):
-        #size = (320,240)
-#        c_frame = cv2.cvtColor(c_frame, cv2.COLOR_BGR2RGB)
-        #cv2.imshow("hoge ", c_frame)
-        #cv2.waitKey(0)
-        res = ""
-        #img_gray = cv2.cvtColor(c_frame, cv2.COLOR_BGR2GRAY)
-        valid_frame_output = self.run_inference(c_frame, self.graph)
-        #face_list = self.cascade.detectMultiScale(img_gray, minSize=(90,90))
-        face_list = self.cascade.detectMultiScale(c_frame, minSize=(90,90))
-        for (x,y,w,h) in face_list:
-            # 顔検出した
-            #            croped_image = img_gray[y:y+h, x:x+w]
-            croped_image = c_frame[y:y+h, x:x+w]
-            croped_image = cv2.resize(croped_image, (160,160))
-            colored_image = cv2.cvtColor(croped_image, cv2.COLOR_BGR2RGB)
-            # croped_image = preprocess_image(croped_image)
-            #cv2.imshow("crop!", croped_image)
-            #cv2.waitKey(0)
-            res = self.run_images(valid_frame_output, colored_image, self.graph, self.input_image_filename_list)
-            #run_images(valid_frame_output, c_frame, self.graph, self.input_image_filename_list)
-#            croped_org = frame[y:y+h, x:x+w]
-#            croped_org = cv2.resize(croped_org, (160,160))
-
-
-            return True, res, croped_image
-        return False, res, c_frame
-        # Clean up the graph and the device
-#        graph.DeallocateGraph()
-#        device.CloseDevice()
 
     def __init__(self):
+        self.register = {}   # {"juntoku eri": "準得 映理"}
+        with open("register", "r") as l:
+            #    i = [j.strip() for j in l.readlines()]
+            i = l.readlines()
+            for j in i:
+                n,m = j.split(",")
+                self.register[n] = m.strip()
+                #    print(register)
+        l.close
 
         self.EXAMPLES_BASE_DIR='../../'
         #IMAGES_DIR = './Img/Crop/Gray/'
         self.IMAGES_DIR = './Img/Crop/Color/'
         
         # VALIDATED_IMAGES_DIR = IMAGES_DIR + 'validated_images/'
-        VALIDATED_IMAGES_DIR = './Img/validated_images/'
+        self.VALIDATED_IMAGES_DIR = './Img/validated_images/'
         #validated_image_filename = VALIDATED_IMAGES_DIR + 'valid.jpg'
         self.validated_image_filename = VALIDATED_IMAGES_DIR + 'araki_20180627.jpg'
 
@@ -465,7 +354,7 @@ class Facenet:
         INTERVAL = 33
         ESC_KEY = 27     # Escキー
         # 分類器の指定
-        CASCADE_FILE = "./haarcascade_frontalface_alt2.xml"
+        self.CASCADE_FILE = "./haarcascade_frontalface_alt2.xml"
         self.PKL_PATH = "img_facenet_MOVIDIUS.pkl"
         
 
@@ -483,21 +372,21 @@ class Facenet:
         self.device.OpenDevice()
 
         # The graph file that was created with the ncsdk compiler
-        graph_file_name = GRAPH_FILENAME
+        self.graph_file_name = GRAPH_FILENAME
 
         # read in the graph file to memory buffer
         with open(graph_file_name, mode='rb') as f:
             graph_in_memory = f.read()
 
         # create the NCAPI graph instance from the memory buffer containing the graph file.
-        self.graph = self.device.AllocateGraph(graph_in_memory)
+        self.graph = device.AllocateGraph(graph_in_memory)
 
         #    validated_image = cv2.imread(validated_image_filename)
         #    valid_output = run_inference(validated_image, graph)
 
         # get list of all the .jpg files in the image directory
-        input_image_filename_list = os.listdir(self.IMAGES_DIR)
-        self.input_image_filename_list = [self.IMAGES_DIR + i for i in input_image_filename_list if i.endswith('.jpg')]
+        input_image_filename_list = os.listdir(IMAGES_DIR)
+        self.input_image_filename_list = [IMAGES_DIR + i for i in input_image_filename_list if i.endswith('.jpg')]
         if (len(input_image_filename_list) < 1):
             # no images to show
             print('No .jpg files found')
@@ -507,11 +396,34 @@ class Facenet:
 
         self.cascade = cv2.CascadeClassifier(CASCADE_FILE)
 
-        #cv2.namedWindow(ORG_WINDOW_NAME)
+        cv2.namedWindow(ORG_WINDOW_NAME)
 
 
+    def face_rec(c_frame):
+        size = (320,240)
+        c_frame = cv2.resize(c_frame, size)
+        img_gray = cv2.cvtColor(c_frame, cv2.COLOR_BGR2GRAY)
+        valid_frame_output = run_inference(c_frame, graph)
+        face_list = self.cascade.detectMultiScale(img_gray, minSize=(90,90))
+        for (x,y,w,h) in face_list:
+            # 顔検出した
+            #            croped_image = img_gray[y:y+h, x:x+w]
+            croped_image = c_frame[y:y+h, x:x+w]
+            croped_image = cv2.resize(croped_image, (160,160))
+            # croped_image = preprocess_image(croped_image)
+            cv2.imshow("crop!", croped_image)
+            run_images(valid_frame_output, croped_image, self.graph, self.input_image_filename_list)
+            #run_images(valid_frame_output, c_frame, self.graph, self.input_image_filename_list)
 
 
+        # Clean up the graph and the device
+#        graph.DeallocateGraph()
+#        device.CloseDevice()
+
+
+    # main entry point for program. we'll call main() to do what needs to be done.
+# if __name__ == "__main__":
+#     sys.exit(main())
 
 
 # Create a window and pass it to the Application object

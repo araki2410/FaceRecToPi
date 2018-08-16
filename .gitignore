@@ -17,4 +17,6 @@ MOVIDIUS/Img/*/*
 MOVIDIUS/Img/*/*/*
 Models/*
 Models/*/*
->>>>>>> a8894fb... modify .gitignore
+*.graph
+*.xml
+*.pkl
