@@ -5,4 +5,16 @@ facenet/*
 Img/*_*.jpg
 facenets/*
 facenets/*/*
+<<<<<<< HEAD
 facenets/*/*/*/*
+=======
+facenets/*/*/*/*
+Img/*
+Img/*/*
+Img/*/*/*
+MOVIDIUS/Img/*
+MOVIDIUS/Img/*/*
+MOVIDIUS/Img/*/*/*
+Models/*
+Models/*/*
+>>>>>>> a8894fb... modify .gitignore
