@@ -19,8 +19,8 @@ $マークは、コマンドを入力したことを示すためにのみ使用�
 ```shell
 $ cd
 ```
+<a href="https://qiita.com/mt08/items/e8e8e728cf106ac83218">ラズパイ3にOpenCV3を簡単に導入</a>
 ```shell
-https://qiita.com/mt08/items/e8e8e728cf106ac83218
 ```
 
 ## Tensorflow
@@ -28,9 +28,9 @@ https://qiita.com/mt08/items/e8e8e728cf106ac83218
 ```shell
 $ cd
 ```
+<a href="https://github.com/samjabrahams/tensorflow-on-raspberry-pi">github.com/samjabrahams/tensorflow-on-raspberry-pi</a>
+<a href="ttps://qiita.com/ekzemplaro/items/553db4c229632af79607">Raspberry Pi に python3 用の　tensorflow をインストール</a>
 ```shell
-https://github.com/samjabrahams/tensorflow-on-raspberry-pi
-https://qiita.com/ekzemplaro/items/553db4c229632af79607
 ```
 ## FaceRecToPi
 (cd your favorite dir)
