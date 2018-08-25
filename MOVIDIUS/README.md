@@ -15,27 +15,28 @@ The $ mark is only used to indicate that you typed the command, so you do not hi
 
 $マークは、コマンドを入力したことを示すためにのみ使用されるため、実際には打つことはありません。
 ## Opencv
+(cd your favorite dir)
 ```shell
 $ cd
 ```
-(cd your favorite dir)
 ```shell
 https://qiita.com/mt08/items/e8e8e728cf106ac83218
 ```
+
 ## Tensorflow
+(cd your favorite dir)
 ```shell
 $ cd
 ```
-(cd your favorite dir)
 ```shell
 https://github.com/samjabrahams/tensorflow-on-raspberry-pi
 https://qiita.com/ekzemplaro/items/553db4c229632af79607
 ```
 ## FaceRecToPi
+(cd your favorite dir)
 ```shell
 $ cd
 ```
-(cd your favorite dir)
 ```shell
 $ git clone https://github.com/araki2410/FaceRecToPi.git
 $ cd FaceRecToPi
@@ -47,9 +48,9 @@ $ cp /usr/local/opt/opencv/share/OpenCV/haarcascades/haarcascade_frontalface_alt
 
 ## ncsdk (github)
 ```shell
+(cd your favorite dir)
 $ cd
 ```
-(cd your favorite dir)
 ```shell
 $ git clone https://github.com/movidius/ncsdk.git
 ```
@@ -58,10 +59,10 @@ now(25, Aug, 2018) ncsdk.git is down. so...
 read README.md, old vertion is opened. donwload tar.gz file...
 
 ## ncappzoo
+(cd your favorite dir)
 ```shell
 $ cd
 ```
-(cd your favorite dir)
 ```shell
 $ git clone https://github.com/movidius/ncappzoo.git
 $ cd ncappzoo/tensorflow/facenet
