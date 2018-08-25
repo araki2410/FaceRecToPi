@@ -29,6 +29,7 @@ $ cd
 $ cd
 ```
 <a href="https://github.com/samjabrahams/tensorflow-on-raspberry-pi">github.com/samjabrahams/tensorflow-on-raspberry-pi</a>
+
 <a href="ttps://qiita.com/ekzemplaro/items/553db4c229632af79607">Raspberry Pi に python3 用の　tensorflow をインストール</a>
 ```shell
 ```
