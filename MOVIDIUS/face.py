@@ -122,7 +122,7 @@ class App:
             fret, _, frame = self.f_net.face_rec(ret, frame)
             frame = cv2.resize(frame, (self.x, self.y))
             if fret:
-                savename =("./Img/Crop/Color/" + corename[0] + "_" + time.strftime("%Y%m%d%H%M%S") + ".jpg")
+                savename =("./Img/" + corename[0] + "_" + time.strftime("%Y%m%d%H%M%S") + ".jpg")
                 cv2.imwrite(savename, cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
                 self.savedlabel = tk.Label(self.btn_f, text=savename)
                 self.savedlabel.grid(row=1, column=0, columnspan=2)
@@ -436,7 +436,7 @@ class Facenet:
 
         self.EXAMPLES_BASE_DIR='../../'
         #IMAGES_DIR = './Img/Crop/Gray/'
-        self.IMAGES_DIR = './Img/Crop/Color/'
+        self.IMAGES_DIR = './Img/' #Crop/Color/'
         
         # VALIDATED_IMAGES_DIR = IMAGES_DIR + 'validated_images/'
         VALIDATED_IMAGES_DIR = './Img/validated_images/'
