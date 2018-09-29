@@ -1,6 +1,7 @@
 model-*
 *.pb
 *~
+*.zip
 facenet/*
 Img/*_*.jpg
 facenets/*

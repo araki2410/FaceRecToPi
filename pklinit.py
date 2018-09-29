@@ -10,8 +10,8 @@ import sys
 #sys.path.append("/home/yanai-lab/araki-t/Git/facenet/src/")
 import os
 import argparse
-import facenet
-import facenets.src.align.detect_face
+import arakinet
+import facenet.src.align.detect_face
 import pickle
 import scipy
 from scipy import misc
@@ -37,7 +37,7 @@ def main(args):
         with tf.Session() as sess:
 
             # Load the model
-            facenet.load_model(model)
+            arakinet.load_model(model)
 
             # Get input and output tensors
             images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
@@ -90,7 +90,7 @@ def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_memory_fraction)
         sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
         with sess.as_default():
-            pnet, rnet, onet = facenets.src.align.detect_face.create_mtcnn(sess, None)
+            pnet, rnet, onet = facenet.src.align.detect_face.create_mtcnn(sess, None)
 
 
     nrof_samples = len(image_paths)
@@ -101,7 +101,7 @@ def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
         img = misc.imread(os.path.expanduser(image_paths[i]))
         img_size = np.asarray(img.shape)[0:2]
         try: 
-            bounding_boxes, _ = facenets.src.align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
+            bounding_boxes, _ = facenet.src.align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
             det = np.squeeze(bounding_boxes[0,0:4])
             bb = np.zeros(4, dtype=np.int32)
             bb[0] = np.maximum(det[0]-margin/2, 0)
@@ -110,7 +110,7 @@ def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
             bb[3] = np.minimum(det[3]+margin/2, img_size[0])
             cropped = img[bb[1]:bb[3],bb[0]:bb[2],:]
             aligned = misc.imresize(cropped, (image_size, image_size), interp='bilinear')
-            prewhitened = facenet.prewhiten(aligned)
+            prewhitened = arakinet.prewhiten(aligned)
             #img_list[i] = prewhitened
             img_list.append(prewhitened)
             extracted_filepaths.append(image_paths[i])

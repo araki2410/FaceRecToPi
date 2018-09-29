@@ -9,8 +9,8 @@ import tensorflow as tf
 import numpy as np
 import sys, os, argparse
 #sys.path.append("/home/yanai-lab/araki-t/Git/facenet/src/")
-import facenet
-import facenets.src.align.detect_face
+import arakinet
+import facenet.src.align.detect_face
 import pickle, scipy
 from scipy import misc
 import time
@@ -40,7 +40,7 @@ def main(args):
 
             # Load the model
             try:
-                facenet.load_model(model)
+                arakinet.load_model(model)
             except:
                 print("No such models, add auguments: --model [model name]")
                 exit()
@@ -128,7 +128,7 @@ def main(args):
                     save_embs(embs, extracted_filepaths)
 #                    print(os.path.basename(target_filepaths[0]))
                     
-                    facenet.detection(os.path.basename(target_filepaths[0])) #argv[1] #after your task, not only one shot.
+                    arakinet.detection(os.path.basename(target_filepaths[0])) #argv[1] #after your task, not only one shot.
 
                     #####################
                     ####################
@@ -190,7 +190,7 @@ def load_and_align_data(image_path, image_size, margin, gpu_memory_fraction):
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_memory_fraction)
         sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
         with sess.as_default():
-            pnet, rnet, onet = facenets.src.align.detect_face.create_mtcnn(sess, None)
+            pnet, rnet, onet = facenet.src.align.detect_face.create_mtcnn(sess, None)
 
 
 #    nrof_samples = len(image_path)
@@ -201,7 +201,7 @@ def load_and_align_data(image_path, image_size, margin, gpu_memory_fraction):
     img = misc.imread(os.path.expanduser(image_path))
     img_size = np.asarray(img.shape)[0:2]
     # Try Detect to face And Crop face image!
-    bounding_boxes, _ = facenets.src.align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
+    bounding_boxes, _ = facenet.src.align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
     try:
         det = np.squeeze(bounding_boxes[0,0:4])
     except:
@@ -216,7 +216,7 @@ def load_and_align_data(image_path, image_size, margin, gpu_memory_fraction):
     cropped = img[bb[1]:bb[3],bb[0]:bb[2],:]
     aligned = misc.imresize(cropped, (image_size, image_size), interp='bilinear')
     try:
-        prewhitened = facenet.prewhiten(aligned)
+        prewhitened = arakinet.prewhiten(aligned)
         img_list.append(prewhitened)
         extracted_filepaths.append(image_path)
     except:
