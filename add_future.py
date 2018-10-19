@@ -1,4 +1,4 @@
-#!/usr/bin/python3.4
+#!/usr/bin/python3
 # -*- coding:utf-8 -*-
 
 from __future__ import absolute_import
@@ -10,20 +10,18 @@ import sys
 #sys.path.append("/home/yanai-lab/araki-t/Git/facenet/src/")
 import os
 import argparse
-<<<<<<< HEAD:pklinit.py
-import facenet
-import facenets.src.align.detect_face
-=======
 import arakinet
 import facenet.src.align.detect_face
->>>>>>> 111bf877d13a051cc656ad54d6d0f2428220a14e:pklinit.py
 import pickle
 import scipy
 from scipy import misc
 img_paths_list = [] #{./Face/image1, ./Face/image2,...}
-#imglist = [] # {image1,image2,image....}
+imglist = [] # {image1,image2,image....}
 #distance = {} # {[image:distance],[:],...}
 #likelist = [] # alike image
+
+
+
 def main(args):
     args_filepaths = args.image_files
     image_size = args.image_size
@@ -42,22 +40,24 @@ def main(args):
         with tf.Session() as sess:
 
             # Load the model
-            arakinet.load_model(model)
-
+            try:
+                arakinet.load_model(model)
+            except:
+                print("No such models, add auguments: --model [model name]")
+                exit()
             # Get input and output tensors
             images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
             embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
             phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
-
+#            print("\n\n",args_filepaths,"\n\n")
             for i in range(0, len(args_filepaths), batch_size):
                 target_filepaths = args_filepaths[i:i+batch_size]
-                print("target_filepaths len:{}".format(len(target_filepaths)))
+#                print("target_filepaths len:{}".format(len(target_filepaths)))
                 images, target_filepaths = load_and_align_data(target_filepaths, image_size, margin, gpu_memory_fraction)
-                print("target_filepaths len:{}".format(len(target_filepaths)))
                 # Run forward pass to calculate embeddings
                 feed_dict = { images_placeholder: images, phase_train_placeholder:False }
                 emb = sess.run(embeddings, feed_dict=feed_dict)
-                print("emb len:{}".format(len(emb)))
+#                print("emb len:{}".format(len(emb)))
 
                 for j in range(len(target_filepaths)):
                     extracted_filepaths.append(target_filepaths[j])
@@ -68,19 +68,31 @@ def main(args):
 
 def save_embs(embs, paths):
     # 特徴量の取得
+    pkl_path = "img_facenet.pkl"
+
+    # with open(pkl_path, 'rb') as f:
+    #     data = pickle.load(f)
+    # f.close()
+    f = open(pkl_path, 'rb')
+    if sys.version_info.major == 2:
+        data = pickle.load(f)
+    elif sys.version_info.major == 3:
+        data = pickle.load(f, encoding='latin-1')
+    f.close()
+                           
+    for i in paths:
+        imglist.append(i.split('/')[-1])
     reps = {}
     for i, (emb, path) in enumerate(zip(embs, paths)):
-        #print('%1d: %s' % (i, paths))
-        #print(emb)
         try:
             basename = os.path.basename(path)
             reps[basename] = emb
         except:
             print('error %1d: %s' % (i, path) )
     # 特徴量の保存
-    with open('img_facenet.pkl', 'wb') as f:
+    with open(pkl_path, 'wb') as f:
+        reps.update(data)
         pickle.dump(reps, f)
-
 
 def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
     # 処理が正常に行えた画像パス
@@ -98,7 +110,6 @@ def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
             pnet, rnet, onet = facenet.src.align.detect_face.create_mtcnn(sess, None)
 
 
-
     nrof_samples = len(image_paths)
     img_list = [] #[None] * nrof_samples
     for i in range(nrof_samples):
@@ -106,7 +117,8 @@ def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
         img_paths_list.append(image_paths[i])
         img = misc.imread(os.path.expanduser(image_paths[i]))
         img_size = np.asarray(img.shape)[0:2]
-        try: 
+        try:
+            # Try Detect to face And Crop face image!
             bounding_boxes, _ = facenet.src.align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
             det = np.squeeze(bounding_boxes[0,0:4])
             bb = np.zeros(4, dtype=np.int32)
@@ -117,12 +129,12 @@ def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
             cropped = img[bb[1]:bb[3],bb[0]:bb[2],:]
             aligned = misc.imresize(cropped, (image_size, image_size), interp='bilinear')
             prewhitened = arakinet.prewhiten(aligned)
-            #img_list[i] = prewhitened
             img_list.append(prewhitened)
             extracted_filepaths.append(image_paths[i])
         except:
             print("cannot extract_image_align")
-            
+            exit()
+        
     image = np.stack(img_list)
     return image, extracted_filepaths
 
@@ -130,7 +142,7 @@ def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
 
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, help='Could be either a directory containing the meta_file and ckpt_file or a model protobuf (.pb) file', default="./Models/20180402-114759/20180402-114759.pb")
+    parser.add_argument('--model', type=str, help='Could be either a directory containing the meta_file and ckpt_file or a model protobuf (.pb) file', default="./Models/20180408-102900.pb")
     parser.add_argument('image_files', type=str, nargs='+', help='Images to compare')
     parser.add_argument('--image_size', type=int,
         help='Image size (height, width) in pixels.', default=160)
@@ -143,47 +155,7 @@ def parse_arguments(argv):
     return parser.parse_args(argv)
 
 if __name__ == '__main__':
-#    try:
     main(parse_arguments(sys.argv[1:]))
-#    except:
-#        print('\n\nError: too few arguments\n Please execute "' + sys.argv[0] + ' [MODEL] [IMGdir]/* "\n\n')
+# Measure the distance to Input_image with Collected_features
+# arakinet.detection(imglist[0]) # input argv[1]
 
-
-# import facechecker
-# facechecker.checking("output.jpg")
-
-
-exit()
-
-#from scipy import spatial
-pkl_path = "img_facenet.pkl"
-
-with open(pkl_path, 'rb') as f:
-    data = pickle.load(f)
-
-print(img_paths_list)
-for i in img_paths_list:
-    imglist.append(i.split('/')[-1])
-#print(imglist)
-
-# A = data[img_paths_list[0].split('/')[-1]]
-# B = data[img_paths_list[1].split('/')[-1]]
-
-# print("A,B")
-# print(scipy.spatial.distance.euclidean(A, B))
-# print("A,C")
-# print(scipy.spatial.distance.euclidean(A, C))
-
-
-for i in imglist:
-    distance[i] = scipy.spatial.distance.euclidean(data[i], data[imglist[-1]])
-#    print(i)
-#    print(scipy.spatial.distance.euclidean(data[i], data[imglist[-1]]))
-
-for j,k in sorted(distance.items(), key=lambda x:x[1]):
-    print(k,"\t",j)
-    if k > 0 and k < 1:
-        likelist.append(j)
-
-print(likelist)
-#print("Inputed image is like %s"%)

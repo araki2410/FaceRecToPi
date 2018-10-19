@@ -1,4 +1,13 @@
 model-*
 *.pb
 *~
+<<<<<<< HEAD
 facenet/*
+=======
+*.zip
+facenet/*
+Img/*_*.jpg
+facenets/*
+facenets/*/*
+facenets/*/*/*/*
+>>>>>>> 111bf877d13a051cc656ad54d6d0f2428220a14e
