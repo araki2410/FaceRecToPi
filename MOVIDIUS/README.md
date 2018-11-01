@@ -10,6 +10,9 @@ Real time face identification on RaspberryPi with MOVIDIUS stick.
 - Opencv
 - tensorflow
 
+-PyQt
+<>
+
 # Install
 The $ mark is only used to indicate that you typed the command, so you do not hit it in practice.
 

@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
 
-import cv2
 import tkinter as tk
 import tkinter
 from tkinter import ttk
@@ -65,7 +64,7 @@ class App:
         self.filename_form = tk.Entry(self.btn_f)
         self.jp_form = tk.Entry(self.btn_f)
         # Button that lets the user take a snapshot
-        self.btn_snapshot=tk.Button(self.btn_f, text="めいぼ から さつえい", command=self.friend_snapshot,font=("", 20))#, width=50)
+        self.btn_snapshot=tk.Button(self.btn_f, text="さつえい", command=self.friend_snapshot,font=("", 20))#, width=50)
         self.btn_snapshot.grid(row=0, column=2, rowspan=2) #.pack(anchor=tkinter.CENTER, expand=True)
         self.btn_save=tk.Button(self.btn_f, text="とうろく", command=self.add_register,font=("", 20))
         self.btn_save.grid(row=3, column=2, rowspan=2) #.pack(anchor=tk.CENTER, expand=True)
