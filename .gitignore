@@ -17,6 +17,6 @@ MOVIDIUS/Img/*/*
 MOVIDIUS/Img/*/*/*
 Models/*
 Models/*/*
-*.graph
+*graph
 *.xml
 *.pkl
