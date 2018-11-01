@@ -1,225 +1,262 @@
 #!/usr/bin/python3
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 
-import tkinter as tk
-import tkinter
-from tkinter import ttk
-import cv2
-import PIL.Image, PIL.ImageTk
-import time
-from mvnc import mvncapi as mvnc
-import numpy
 import sys, os
-import pickle
+import cv2
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QLineEdit, QPushButton, QVBoxLayout,
+    QHBoxLayout, QGridLayout, QLabel, QComboBox, QSizePolicy)
+from PyQt5.QtGui import QPixmap, QImage, QFont 
+from PyQt5.QtCore import QTimer, Qt
+import time
 from time import sleep, gmtime, strftime
+from mvnc import mvncapi as mvnc
+import numpy 
+import pickle
+
 
 class App:
-    def __init__(self, window, window_title, video_source=0):
-        self.top_name = "none..."
-        self.window = window
-        self.window.title(window_title)
-        self.window.attributes("-zoomed",True)
-#        self.window.attributes("-fullscreen",True)
-        self.video_source = video_source
-        # open video source (by default this will try to open the computer webcam)
-        self.vid = MyVideoCapture(self.video_source)
-        # facenet
+    def __init__(self, video_source=0):
+        app = QApplication(sys.argv)
+        self.vid = MyVideoCapture(video_source)
         self.f_net =Facenet()
+        self.window = QWidget()
+        self.initLayout()
 
-        # ret, c_frame = self.vid.get_frame()
-        # self.f_net.face_rec(ret, c_frame, top_name)
+        # auto refresh 15FPS 
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update)
+        self.timer.start(1000./15)
+        self.window.update()
+
+        self.window.show()
         
-        # Create a canvas that can fit the above video source size
-        self.x, self.y = 280, 210
-        self.canvas = tk.Canvas(window, width=self.x, height=self.y, bg="blue")
-        self.canvas.grid(row=0, column=0)
-        self.capture = tk.Canvas(window, width=self.x, height=self.y, bg="navy")
-        self.capture.grid(row=1, column=0)
-        #self.capturelab = tk.Label(window, bg="navy")
-        #self.capturelab.grid(row=1, column=0)
+        sys.exit(app.exec_())
 
-        self.namelab = tk.Label(window, text="", bg="yellow")
-        self.namelab.grid(row=0, column=1)
+    def capture_image(self):
+        self.caped_image.setPixmap(QPixmap("./Img/tmp.jpg"))
+#        self.window.addWidget(self.caped_image)
 
-
-        ### frame in frame
-        # self.register = {}   # {"juntoku eri": "準得 映理"}        # [DE09890200]
-        self.register = []   # [準得 映理, ...]
-        with open("register", "r") as f:
-            #    i = [j.strip() for j in l.readlines()]
-            i = f.readlines()
-            for j in i:
-                try:
-                    # n,m = j.split(",")                           # [DE09890200]
-                    # self.register[n] = m.strip()                 # [DE09890200]
-                    self.register.append(j.strip())
-                except:
-                    pass
-            #    print(register)
-            # self.options = list(self.register.values())          # [DE09890200]
-            self.options = self.register
-        f.close
-
-        self.btn_f = tk.Frame(window, relief=tkinter.RIDGE, bd=2)
-        self.filename_form = tk.Entry(self.btn_f)
-        self.jp_form = tk.Entry(self.btn_f)
-        # Button that lets the user take a snapshot
-        self.btn_snapshot=tk.Button(self.btn_f, text="さつえい", command=self.friend_snapshot,font=("", 20))#, width=50)
-        self.btn_snapshot.grid(row=0, column=2, rowspan=2) #.pack(anchor=tkinter.CENTER, expand=True)
-        self.btn_save=tk.Button(self.btn_f, text="とうろく", command=self.add_register,font=("", 20))
-        self.btn_save.grid(row=3, column=2, rowspan=2) #.pack(anchor=tk.CENTER, expand=True)
-        #self.btn_save=tk.Button(self.btn_f, text="さつえい", command=self.add_register,font=("", 20))
-        self.btn_save=tk.Button(self.btn_f, text="さつえい", command=self.stranger_snapshot,font=("", 20))
-        self.btn_save.grid(row=5, column=2, rowspan=2) #.pack(anchor=tk.CENTER, expand=True)
-
-        self.selectlabel = tk.Label(self.btn_f, text="めいぼ:")
-        self.selectlabel.grid(row=0,column=0)
-        savedlabel = tk.Label(self.btn_f, text="")
-        savedlabel.grid(row=1, column=0, columnspan=2)
-        savedlabel.grid(row=4, column=0, columnspan=2)
-        self.selection = ttk.Combobox(self.btn_f, state="readonly",font=("", 15))
-        self.selection["values"]=self.options
-        self.selection.set("noname")
-        self.selection.grid(row=0, column=1)
-        self.jplabel = tk.Label(self.btn_f, text="なまえ とうろく:")
-        self.jplabel.grid(row=3,column=0)
-        self.jp_form.grid(row=3, column=1)
-        # self.filelabel = tk.Label(self.btn_f, text="tanakataro") # [DE09890200]
-        # self.filelabel.grid(row=4, column=0)                     # [DE09890200]
-        # self.filename_form.grid(row=4, column=1)                 # [DE09890200]
-        self.inputlabel = tk.Label(self.btn_f, text="")
-        self.inputlabel.grid(row=6, column=1, columnspan=1)
-
-        self.btn_f.grid(row=1, column=1)
 
         
-        # After it is called once, the update method will be automatically called every delay milliseconds
-        self.delay = 15
-        self.update()
+    def initLayout(self):
+        self.window.showFullScreen()
+        self.window.setWindowTitle('FaceNet on Raspberrypi with MOVIDIUS')
+        #self.window.resize(250, 150)
 
-        self.window.mainloop()
-
-
-
-    def add_register(self):
-        # corename = self.filename_form.get()                      # [DE09890200]
-        corename =  self.jp_form.get()
-        valuename = self.jp_form.get()
-        # if corename=="" or valuename=="":                        # [DE09890200]
-        if corename=="" :
-            #no input, 空登録はしない
-            pass
-        #elif self.register.get(corename):                          # [DE09890200]
-        elif corename in self.register:
-            #保存済のfilename, 二重登録はしない
-            pass
-        else:
-            # self.register[corename]=valuename                    # [DE09890200]
-            self.register.append(corename)
-            with open("register", "a") as f:
-                # f.write("\n" + corename + "," + valuename)       # [DE09890200]
-                # f.write("\n" + corename)
-                f.write(corename + "\n")
-            f.close
-            # self.selection["values"]=list(self.register.values())
-            self.selection["values"]=self.register
-            self.selection.set(valuename)
-            self.selection.grid(row=0, column=1)
-
-    def snapshot(self):
-        self.fret = False
-        savename =("./Img/" + self.corename + "_" + time.strftime("%Y%m%d_%H%M%S") + ".jpg")
-        cv2.imwrite(savename, cv2.cvtColor(self.face_frame, cv2.COLOR_RGB2BGR))        
-        self.f_net.new_emb(savename)
-        self.savedlabel = tk.Label(self.btn_f, text=savename)
-        self.savedlabel.grid(row=1, column=0, columnspan=2)
-        self.capture['bg']="green"
-        self.capture.create_image(self.x/2, self.y/2, image = self.shot, anchor = tkinter.CENTER)
+        self.textbox = QLineEdit()
+        # self.textbox.move(70, 50)
+        self.textbox.resize(150,50)
+        
+        # self.caped_image = QLabel(self.window)
+        self.caped_image = QLabel()
+        self.caped_image.resize(400, 400)
+        self.caped_image.setStyleSheet("background-color:#33AA55;")
+        self.croped_image = QLabel()
+        self.croped_image.resize(200, 200)
+        # self.croped_image.setStyleSheet("background-color:#3355AA;")
+        # self.caped_image.move(500,50)
+        self.colored_label = QLabel()
+        # self.colored_label.resize(200, 200)
+        self.colored_label.setStyleSheet("background-color:#3355AA;")
 
         
-    def stranger_snapshot(self):
-        corename = self.jp_form.get()
-        if corename == "":
-            # 名無しで顔だけ撮影しない
-            self.savedlabel = tk.Label(self.btn_f, text="なまえ を にゅうりょく して ください。")
-            self.savedlabel.grid(row=4, column=0, columnspan=2)
-            return 0
-        elif self.fret:
-#            self.sevedlabel = ""
-#            self.savedlabel.grid(row=4, column=0, columnspan=2)
-            self.corename=corename
-            self.snapshot()
-  
-    def friend_snapshot(self):
-        # Get a frame from the video source
-        # ret, frame = self.vid.get_frame()                          # [FA12341234]
-        # name = self.selection.get()                                # [DE09890200]
-        # corename = [k for k, v in self.register.items() if v == name] # [DE09890200]
-        corename = self.selection.get()
-        # if len(corename) == 0:                                   # [DE09890200]
-        if corename == "noname":
-            # 名無しで顔だけ撮影しない
-            # ret = False                                            # [FA12341234]
-            self.savedlabel = tk.Label(self.btn_f, text="なまえ を えらんで ください")
-            self.savedlabel.grid(row=1, column=0, columnspan=2)
-            return 0
-#        cv2.imwrite("./Img/" + text + "_" + time.strftime("%Y%m%d%H%M%S") + ".jpg", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
-        #print("./Img/" + text + "_" + time.strftime("%Y%m%d%H%M%S") + ".jpg")
-        #if ret:                                                     # [FA12341234]
-        if self.fret:
-            self.corename=corename
-            self.snapshot()
-            # self.fret = False
-            # savename =("./Img/" + corename + "_" + time.strftime("%Y%m%d_%H%M%S") + ".jpg")                           # [FA12341234]
-            # cv2.imwrite(savename, cv2.cvtColor(self.face_frame, cv2.COLOR_RGB2BGR))                                   # [FA12341234]
-            # self.savedlabel = tk.Label(self.btn_f, text=savename)                                                     # [FA12341234]
-            # self.savedlabel.grid(row=1, column=0, columnspan=2)                                                       # [FA12341234]
-            # self.capture['bg']="green"
-            # self.capture.create_image(self.x/2, self.y/2, image = self.shot, anchor = tkinter.CENTER)                 # [FA12341234]
+        font = QFont("メイリオ")
+        font.setPointSize(25)
+        font.setBold(True)
+        self.top_name = QLabel()
+        self.top_name.setFont(font)
+        self.sec_name = QLabel()
+        self.thr_name = QLabel()
 
-            # fret, _, frame = self.f_net.face_rec(ret, frame)                                                        # [FA12341234]
-            # frame = cv2.resize(frame, (self.x, self.y))                                                             # [FA12341234]
-            # if fret:
-            #     # savename =("./Img/" + corename[0] + "_" + time.strftime("%Y%m%d_%H%M%S") + ".jpg") # [DE09890200] # [FA12341234]
-            #     savename =("./Img/" + corename + "_" + time.strftime("%Y%m%d_%H%M%S") + ".jpg")                     # [FA12341234]
-            #     cv2.imwrite(savename, cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))                                       # [FA12341234]
-            #     self.savedlabel = tk.Label(self.btn_f, text=savename)                                               # [FA12341234]
-            #     self.savedlabel.grid(row=1, column=0, columnspan=2)                                                 # [FA12341234]
+        self.top_prop = QLabel()
+        self.sec_prop = QLabel()
+        self.thr_prop = QLabel()
+        green = QLabel("1")
+        yegre = QLabel("2")
+        yelow = QLabel("3")
+        green.setStyleSheet("background-color:#55BB55;")
+        yegre.setStyleSheet("background-color:#99BB55;")
+        yelow.setStyleSheet("background-color:#AAAA11;")
+        sizepolicy_color = green.sizePolicy()
+        sizepolicy_label = self.top_name.sizePolicy()
+        # 1:9 の比率でlabelを配置
+        sizepolicy_color.setHorizontalStretch(1)
+        sizepolicy_label.setHorizontalStretch(9)
+        self.top_name.setSizePolicy(sizepolicy_label)
+        self.sec_name.setSizePolicy(sizepolicy_label)
+        self.thr_name.setSizePolicy(sizepolicy_label)
+        green.setSizePolicy(sizepolicy_color)
+        yegre.setSizePolicy(sizepolicy_color)
+        yelow.setSizePolicy(sizepolicy_color)
+        
 
-            #     self.shot = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))                              # [FA12341234]
-            #     self.capture.create_image(0, 0, image = self.shot, anchor = tkinter.NW)                             # [FA12341234]
+        self.fret=False
+        shot_button = QPushButton()
+        shot_button.setText('さつえい')
+        shot_button.clicked.connect(self.text2filename)
+        shot_button.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
+        drop_button = QPushButton()
+        drop_button.setText('さつえい')
+        drop_button.clicked.connect(self.drop2filename)
+        drop_button.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
 
+        # Layput Boxes Design
+        # QVBox QHBox QGrid
+        # name_layout = QVBoxLayout()
+        # name_layer0 = QVBoxLayout()
+        # name_layer0.addWidget(self.top_name)
+        # name_layer0.addWidget(self.top_prop)
+        # name_layer1 = QVBoxLayout()
+        # name_layer1.addWidget(self.sec_name)
+        # name_layer1.addWidget(self.sec_prop)
+        # name_layer2 = QVBoxLayout()
+        # name_layer2.addWidget(self.thr_name)
+        # name_layer2.addWidget(self.thr_prop)
+        name_layout = QGridLayout()
+        name_layout.addWidget(green, 0,0)
+        name_layout.addWidget(yegre, 1,0)
+        name_layout.addWidget(yelow, 2,0)
+        #name_layout.addLayout(name_layer0, 0,1)
+        #name_layout.addLayout(name_layer1, 1,1)
+        #name_layout.addLayout(name_layer2, 2,1)
+        name_layout.addWidget(self.top_name, 0,1)
+        name_layout.addWidget(self.sec_name, 1,1)
+        name_layout.addWidget(self.thr_name, 2,1)
+        name_layout.addWidget(self.top_prop, 0,2)
+        name_layout.addWidget(self.sec_prop, 1,2)
+        name_layout.addWidget(self.thr_prop, 2,2)
+
+        self.dropdown_init()
+        input_layer = QGridLayout()
+        input_layer.addWidget(QLabel("なまえ にゅうりょく"), 0,0)
+        input_layer.addWidget(self.textbox, 0,1)
+        input_layer.addWidget(shot_button, 0,2)
+        input_layer.addWidget(QLabel("なまえ せんたく"), 1,0)
+        input_layer.addWidget(self.dropdown, 1,1)
+        input_layer.addWidget(drop_button, 1,2)
+        # input_layer.addLayout(input_slayer, alignment=(Qt.AlignCenter))
+
+        self.output_message = QLabel()
+        input_layout = QVBoxLayout()
+        input_layout.addLayout(input_layer)
+        input_layout.addWidget(self.output_message)
+        
+        main_layout = QGridLayout()        
+        main_layout.addWidget(self.caped_image, 0,0)
+        main_layout.addLayout(name_layout, 0,1)
+        main_layout.addWidget(self.colored_label, 1,0)
+        main_layout.addWidget(self.croped_image, 1,0, alignment=(Qt.AlignCenter))
+
+        main_layout.addLayout(input_layout, 1,1)
+        
+        self.window.setLayout(main_layout)
+
+    def dropdown_init(self):
+        self.dropdown = QComboBox()
+        self.dropdown.addItem("----")
+        self.drop_list = []
+        for i in self.f_net.input_image_filename_list:
+            name = i.split("/")[-1].split("_")[0]
+            if name not in self.drop_list:
+                self.drop_list.append(name)
+                self.dropdown.addItem(name)
+        self.dropdown.activated[str].connect(self.drop_text)
+        self.droptext = ""
+
+    def drop_text(self, text):
+        self.droptext = self.dropdown.currentText()
+        if self.droptext == "----":
+            self.droptext = ""
+
+        
+    def text2filename(self):
+        self.filename = self.textbox.text()
+        # 魔法のことばの入力で別の関数を呼び出す。
+        # データの削除関数を呼び出す。
+        if self.filename == "せんたくしたデータをさくじょ":
+            if self.droptext == "":
+                # 選ばれていない場合なにもしない。(めっせーじを空にする)
+                self.output_message.setText("")
+                return 0
             
-    def cap_frame(self):
-        # Get a frame from the video source
-        ret, frame = self.vid.get_frame()
+            rmdir = self.f_net.IMAGES_DIR
+            rmname = self.droptext
+            rmdatapath = os.path.join(rmdir, rmname)
+            print(rmdatapath)
+            os.system("rm "+rmdatapath+"*")
+            self.output_message.setText(rmdatapath + "* さくじょ しました")
+        else:
+            #self.dropdown.addItem(self.filename)
+            if len(self.filename) < 10:
+                if self.filename not in self.drop_list:
+                    self.drop_list.append(self.filename)
+                    self.dropdown.addItem(self.filename)
+            self.clip(self)
+            
+    def drop2filename(self):
+        self.filename = self.droptext
+        self.clip(self)
+        
+    def clip(self, _):
+        if self.filename == "":
+            self.output_message.setText("なまえ が ありません。")
+            return 0
+        elif len(self.filename) > 10:
+            self.output_message.setText("なまえ が ながすぎます。(10もじまで)")
+            return 0
+        if self.fret:
+            self.fret = False
+            # self.corename = self.filename
+            savename =("./Img/" + self.filename + "_" + time.strftime("%Y%m%d_%H%M%S") + ".jpg")
+            cv2.imwrite(savename, cv2.cvtColor(self.face_frame, cv2.COLOR_RGB2BGR))        
+            self.f_net.new_emb(savename)
+            # 背景の色をかえる
+            self.colored_label.setStyleSheet("background-color:#33AA55;")
+            # 保存した名前を表示する
+            message = "save:" + savename
+        else:
+            message = "あたらしい かお が みつかりません。"
+        self.output_message.setText(message)
 
-        if ret:
-            #return(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
-            return(frame)
-
+        
     def update(self):
-        # Get a frame from the video source
         ret, frame = self.vid.get_frame()
         fret, top_fname, face_frame = self.f_net.face_rec(ret, frame)
-        frame = cv2.resize(frame, (self.x, self.y))
+
         if ret:
-            self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
-            self.canvas.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
+            #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = cv2.resize(frame, (360,270))
+            img = QImage(frame, frame.shape[1], frame.shape[0], QImage.Format_RGB888)
+            pix = QPixmap.fromImage(img)
+            self.caped_image.setPixmap(pix)
         if fret:
-            # self.top_name = self.register.get(top_fname,"--名前を選択--") # [DE09890200]
-            self.fret = fret                                                                                          # [FA12341234]
-            self.face_frame = face_frame                                                                              # [FA12341234]
-            self.shot = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(face_frame))                               # [FA12341234]
-            self.capture['bg']="navy"
-            self.capture.create_image(self.x/2, self.y/2, image = self.shot, anchor = tkinter.CENTER)                 # [FA12341234]
-            self.top_name = top_fname
-            self.namelab = tk.Label(self.window, text=self.top_name, bg="yellow", font=("", 20))
-            self.namelab.grid(row=0, column=1, sticky=tk.W+tk.E)
+            self.fret = fret
+            self.face_frame = face_frame
+            self.top_fname = top_fname
+            fpix = QPixmap.fromImage(QImage(face_frame, face_frame.shape[1], face_frame.shape[0], QImage.Format_RGB888))
+            self.colored_label.setStyleSheet("background-color:#3355AA;")
+            self.croped_image.setPixmap(fpix)
+            # top = self.top_fname[0][0].split("/")[-1].split("_")[0]
+            # self.top_name.setText(top)
+            try:
+                # self.top_name.setText(self.top_fname[0][0].split("/")[-1].split("_")[0])
+                # self.sec_name.setText(self.top_fname[1][0].split("/")[-1].split("_")[0])
+                # self.thr_name.setText(self.top_fname[2][0].split("/")[-1].split("_")[0])
+                self.top_name.setText(self.top_fname[0][0])
+                self.top_prop.setText('{0:.1%}'.format(self.top_fname[0][1]).rjust(7,' '))
+                self.sec_name.setText(self.top_fname[1][0])
+                self.sec_prop.setText('{0:.1%}'.format(self.top_fname[1][1]).rjust(7,' '))
+                self.thr_name.setText(self.top_fname[2][0])
+                self.thr_prop.setText('{0:.1%}'.format(self.top_fname[2][1]).rjust(7,' '))
+            except:
+                pass
+
             
-        self.window.after(self.delay, self.update)
-
-
+            
+        # frame from cameraを取得して画面に表示する準備,のあと、画面をupdate
+        self.window.update
+        
 class MyVideoCapture:
     def __init__(self, video_source=0):
         # Open the video source
@@ -248,21 +285,18 @@ class MyVideoCapture:
             self.vid.release()
 
 
-
+            
 class Facenet:
     def save_emb(self, emb, path):
         # 特徴量の取得
         reps = {}
-
+        # print(numpy.sqrt(numpy.sum(emb*emb)))
         try:
             basename = os.path.basename(path)
             reps[basename] = emb
         except:
             print('error %1d: %s' % (i, path) )
 
-        # with open(PKL_PATH, 'rb') as f:
-        #     data = pickle.load(f)
-        # f.close()
         try:
             f = open(self.PKL_PATH, 'rb')
             if sys.version_info.major == 2:
@@ -293,7 +327,6 @@ class Facenet:
         # SSD Mobile net expects
         resized_image = self.preprocess_image(image_to_classify)
 
-        #cv2.imshow("preprocessed", resized_image)
 
         # ***************************************************************
         # Send the image to the NCS
@@ -303,10 +336,8 @@ class Facenet:
         # ***************************************************************
         # Get the result from the NCS
         # ***************************************************************
-        output, userobj = facenet_graph.GetResult()
 
-        #print("Total results: " + str(len(output)))
-        #print(output)
+        output, userobj = facenet_graph.GetResult()
         return output
 
 
@@ -350,7 +381,6 @@ class Facenet:
 
         #convert to RGB
         preprocessed_image = cv2.cvtColor(preprocessed_image, cv2.COLOR_BGR2RGB)
-
         #whiten
         preprocessed_image = self.whiten_image(preprocessed_image)
 
@@ -367,7 +397,6 @@ class Facenet:
         for output_index in range(0, len(face1_output)):
             this_diff = numpy.square(face1_output[output_index] - face2_output[output_index])
             total_diff += this_diff
-        #print('Total Difference is: ' + str(total_diff))
 
         if (total_diff < FACE_MATCH_THRESHOLD):
             # the total difference between the two is under the threshold so
@@ -388,10 +417,12 @@ class Facenet:
             return 100
         total_diff = 0
         
-        for output_index in range(0, len(face1_output)):
-            this_diff = numpy.square(face1_output[output_index] - face2_output[output_index])
-            total_diff += this_diff
-            #print('Total Difference is: ' + str(total_diff))
+        # for output_index in range(0, len(face1_output)):
+        #     this_diff = numpy.square(face1_output[output_index] - face2_output[output_index])
+        #     total_diff += this_diff
+        # print(total_diff)
+        total_diff = numpy.sum((face1_output.astype(numpy.float64) - face2_output.astype(numpy.float64))**2)
+        # print(total_diff)
         return total_diff 
 
 
@@ -407,7 +438,6 @@ class Facenet:
         return True
 
     def new_emb(self, input_image_file):
-        #print(input_image_file)
         # run a single inference on the image and overwrite the
         # boxes and labels
         input_image_file_name = input_image_file.split('/')[-1]
@@ -420,8 +450,8 @@ class Facenet:
         
     # def run_images(self, valid_output, validated_image_filename, graph, input_image_filename_list):
     def run_images(self, valid_output, graph, input_image_filename_list):
-        #cv2.namedWindow(CV_WINDOW_NAME)
-        self.distance_list = {}
+#        self.distance_list = {}
+        self.name2dist = {}
         for input_image_file in input_image_filename_list :        
             try:
                 f = open(self.PKL_PATH, 'rb')
@@ -435,94 +465,83 @@ class Facenet:
             input_image_file_name = input_image_file.split('/')[-1]
             if input_image_file_name in list(data.keys()):
                 test_output = data[input_image_file_name]
+                corename = input_image_file_name.split("/")[-1].split("_")[0]
+                dist = self.face_match_dist(valid_output, test_output)
+                if corename in self.name2dist.keys():
+                    self.name2dist[corename].append(int(dist < 0.8))
+                else:
+                    self.name2dist[corename] = [int(dist < 0.8)]
             else:
                 # read one of the images to run an inference on from the disk
                 test_output = self.new_emb(input_image_file)
-                
-                
-            self.distance_list[input_image_file] = self.face_match_dist(valid_output, test_output)
 
-        self.distance_list = sorted(self.distance_list.items(), key=lambda x:x[1])  # transed to list object
-        #    print(distance_list)
-        top_image_name = self.distance_list[0][0]
-        #top_image = cv2.imread(top_image_name)
-        #cv2.imshow("1st", top_image)
-        top_name = top_image_name.split("/")[-1].split("_")[0]
-        if len(self.distance_list) > 2:
-            sec_image_name = self.distance_list[1][0]
-            thr_image_name = self.distance_list[2][0]
-            top3_image_name = top_image_name +", "+ sec_image_name +", "+ thr_image_name
-            sec_image = cv2.imread(sec_image_name)
-            thr_image = cv2.imread(thr_image_name)
-            # cv2.imshow("2nd", sec_image)
-            # cv2.imshow("3rd", thr_image)
-        #    print(top3_image_name)
 
-        try:
-            return(top_name)
-        except:
-            #print("who is he? I have image but have not data of " + top_name)
-            return("No data")
-            ###
-            ### input data to register here
-            ###
-        
+
+            
+#            self.distance_list[input_image_file] = self.face_match_dist(valid_output, test_output)
+        sig = [0]
+        for i in self.name2dist.values():
+            sig.append(sum(i)/float(len(i)))
+        sig = sum(sig)
+        if sig == 0:
+            return [("がいとうなし", 0.0),("がいとうなし", 0.0),("がいとうなし", 0.0)]
+        for k,v in self.name2dist.items():
+            ave = sum(v)/float(len(v))
+            self.name2dist[k] = ave/sig
+            #self.name2dist[k] = sum(v)/float(len(v))
+
+
+            
+        self.name2dist = (sorted(self.name2dist.items(), key=lambda x:x[1], reverse=True))
+            
+#        self.distance_list = sorted(self.distance_list.items(), key=lambda x:x[1])  # transed to list object
+       
+        # top_image_name = self.distance_list[0][0]
+        # top_name = top_image_name.split("/")[-1].split("_")[0]
         # if len(self.distance_list) > 2:
         #     sec_image_name = self.distance_list[1][0]
         #     thr_image_name = self.distance_list[2][0]
         #     top3_image_name = top_image_name +", "+ sec_image_name +", "+ thr_image_name
         #     sec_image = cv2.imread(sec_image_name)
         #     thr_image = cv2.imread(thr_image_name)
-        #     # cv2.imshow("2nd", sec_image)
-        #     # cv2.imshow("3rd", thr_image)
-        #     print(top3_image_name)
-#    cv2.waitKey(0)
 
-        # cv2.putText(infer_image, match_text + " - Hit key for next.", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
+        return(self.name2dist)
 
+        # try:
+        #     # return(top_name)
+        #     return(self.distance_list[0:3])
+        # except:
+        #     return("No data")
+            ###
+            ### input data to register here
+            ###
+        
     def face_rec(self, ret, c_frame):
         #size = (320,240)
-#        c_frame = cv2.cvtColor(c_frame, cv2.COLOR_BGR2RGB)
-        #cv2.imshow("hoge ", c_frame)
-        #cv2.waitKey(0)
         res = ""
         #img_gray = cv2.cvtColor(c_frame, cv2.COLOR_BGR2GRAY)
-        valid_frame_output = self.run_inference(c_frame, self.graph)
         #face_list = self.cascade.detectMultiScale(img_gray, minSize=(90,90))
         face_list = self.cascade.detectMultiScale(c_frame, minSize=(90,90))
         for (x,y,w,h) in face_list:
             # 顔検出した
-            #            croped_image = img_gray[y:y+h, x:x+w]
             croped_image = c_frame[y:y+h, x:x+w]
             croped_image = cv2.resize(croped_image, (160,160))
+            valid_frame_output = self.run_inference(croped_image, self.graph)
             colored_image = cv2.cvtColor(croped_image, cv2.COLOR_BGR2RGB)
-            # croped_image = preprocess_image(croped_image)
-            #cv2.imshow("crop!", croped_image)
-            #cv2.waitKey(0)
-    #        res = self.run_images(valid_frame_output, colored_image, self.graph, self.input_image_filename_list)
             res = self.run_images(valid_frame_output, self.graph, self.input_image_filename_list)
-            #run_images(valid_frame_output, c_frame, self.graph, self.input_image_filename_list)
-#            croped_org = frame[y:y+h, x:x+w]
-#            croped_org = cv2.resize(croped_org, (160,160))
-
-
             return True, res, croped_image
+        
         return False, res, c_frame
-        # Clean up the graph and the device
+
+    # Clean up the graph and the device
 #        graph.DeallocateGraph()
 #        device.CloseDevice()
 
     def __init__(self):
 
         self.EXAMPLES_BASE_DIR='../../'
-        #IMAGES_DIR = './Img/Crop/Gray/'
         self.IMAGES_DIR = './Img/' #Crop/Color/'
         
-        # VALIDATED_IMAGES_DIR = IMAGES_DIR + 'validated_images/'
-        # validated_image_filename = VALIDATED_IMAGES_DIR + 'valid.jpg'
-        # self.validated_image_filename = VALIDATED_IMAGES_DIR + 'araki_20180627.jpg'
-
-    
         GRAPH_FILENAME = "facenet_celeb_ncs.graph"
 
         # name of the opencv window
@@ -571,16 +590,15 @@ class Facenet:
         # create the NCAPI graph instance from the memory buffer containing the graph file.
         self.graph = self.device.AllocateGraph(graph_in_memory)
 
-        #    validated_image = cv2.imread(validated_image_filename)
-        #    valid_output = run_inference(validated_image, graph)
-
         # get list of all the .jpg files in the image directory
         input_image_filename_list = os.listdir(self.IMAGES_DIR)
         self.input_image_filename_list = [self.IMAGES_DIR + i for i in input_image_filename_list if i.endswith('.jpg')]
         if (len(input_image_filename_list) < 1):
-            # no images to show
-            print('No .jpg files found')
-            return 1
+            ### no images to show
+            # print('No .jpg files found')
+            # return 1
+            os.system("cp ./あらき_20181101_181928.jpg ./Img")
+            self.input_image_filename_list.append("./Img/あらき_20181101_181928.jpg")
 
 
 
@@ -592,6 +610,5 @@ class Facenet:
 
 
 
+App()
 
-# Create a window and pass it to the Application object
-App(tkinter.Tk(), "Tkinter and OpenCV")

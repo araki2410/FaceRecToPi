@@ -1,12 +1,9 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
 
-import cv2
 import tkinter as tk
 import tkinter
 from tkinter import ttk
-from gi.repository import Gtk as gtk
-
 import cv2
 import PIL.Image, PIL.ImageTk
 import time
@@ -43,7 +40,6 @@ class App:
 
         self.namelab = tk.Label(window, text="", bg="yellow")
         self.namelab.grid(row=0, column=1)
-        self.entry = gtk.Entry()
 
 
         ### frame in frame
