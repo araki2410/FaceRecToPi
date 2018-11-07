@@ -3,9 +3,11 @@
 > locale ja_JP.UTF-8
 > timezone ASIA/Tokyo
 
-# install Opencv2 to Pi(jessie 201705) \
+# install Opencv2 to Pi(stretch) \
+'''shell
 $ sudo apt-get update ; sudo apt-get upgrade \
 $ sudo apt-get install build-essential git cmake pkg-config libjpeg-dev libtiff5-dev libjasper-dev libpng12-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libgtk2.0-dev libatlas-base-dev gfortran \
+'''
 
 $sudo apt-get install libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev 
 [https://stackoverflow.com/questions/41328451/ssl-module-in-python-is-not-available-when-installing-package-with-pip3]
