@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLineEdit, QPushButton, QVBoxLayout,
     QHBoxLayout, QGridLayout, QLabel, QComboBox, QSizePolicy)
 from PyQt5.QtGui import QPixmap, QImage, QFont 
-from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtCore import QTimer, Qt, QCoreApplication
 import time
 from time import sleep, gmtime, strftime
 from mvnc import mvncapi as mvnc
@@ -97,8 +97,14 @@ class App:
         first_person.setSizePolicy(sizepolicy_color)
         secnd_person.setSizePolicy(sizepolicy_color)
         third_person.setSizePolicy(sizepolicy_color)
-        
 
+
+        # 終了ぼたん
+        exit_button = QPushButton()
+        exit_button.setText('X')
+        exit_button.clicked.connect(QCoreApplication.instance().quit)
+        
+        
         # self.fret=False
         # shot_button = QPushButton()
         # shot_button.setText('さつえい')
@@ -111,29 +117,17 @@ class App:
 
         # Layput Boxes Design
         # QVBox QHBox QGrid
-        # name_layout = QVBoxLayout()
-        # name_layer0 = QVBoxLayout()
-        # name_layer0.addWidget(self.top_name)
-        # name_layer0.addWidget(self.top_prop)
-        # name_layer1 = QVBoxLayout()
-        # name_layer1.addWidget(self.sec_name)
-        # name_layer1.addWidget(self.sec_prop)
-        # name_layer2 = QVBoxLayout()
-        # name_layer2.addWidget(self.thr_name)
-        # name_layer2.addWidget(self.thr_prop)
         name_layout = QGridLayout()
         name_layout.addWidget(first_person, 0,0)
         name_layout.addWidget(secnd_person, 1,0)
         name_layout.addWidget(third_person, 2,0)
-        #name_layout.addLayout(name_layer0, 0,1)
-        #name_layout.addLayout(name_layer1, 1,1)
-        #name_layout.addLayout(name_layer2, 2,1)
         name_layout.addWidget(self.top_name, 0,1)
         name_layout.addWidget(self.sec_name, 1,1)
         name_layout.addWidget(self.thr_name, 2,1)
         name_layout.addWidget(self.top_prop, 0,2)
         name_layout.addWidget(self.sec_prop, 1,2)
         name_layout.addWidget(self.thr_prop, 2,2)
+        #name_layout.addWidget(exit_button,  0,3)
 
         # self.dropdown_init()
         # input_layer = QGridLayout()
@@ -152,7 +146,8 @@ class App:
         
         main_layout = QGridLayout()
         # main_layout.addWidget(self.caped_image, 0,0)
-        main_layout.addLayout(name_layout, 0,0)
+        main_layout.addLayout(name_layout, 1,0)
+        main_layout.addWidget(exit_button, 0,1)
         # main_layout.addWidget(self.colored_label, 1,0)
         # main_layout.addWidget(self.croped_image, 1,0, alignment=(Qt.AlignCenter))
 
