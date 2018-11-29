@@ -5,7 +5,7 @@ Real time face identification on RaspberryPi with MOVIDIUS stick.
 - RaspberryPi 3 B+ (with rasbian stretch 20180629 model)
 - micro SD (up to 32Gb)
 - MOVIDIUS stick
-<a href="https://developer.movidius.com/" width="200px"><img src="https://ncsuploads.movidius.com/images/made/images/remote/http_ncsuploads.movidius.com/general/95b5762864eba21d410dbe1ac7c6f3de/Buy_page_image_1000_474_85.jpg"></a>
+<a href="https://developer.movidius.com/" width="100"><img src="https://ncsuploads.movidius.com/images/made/images/remote/http_ncsuploads.movidius.com/general/95b5762864eba21d410dbe1ac7c6f3de/Buy_page_image_1000_474_85.jpg"></a>
 - python3.5
 - Opencv
 - Tensorflow
