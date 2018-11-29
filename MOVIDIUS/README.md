@@ -3,11 +3,11 @@ Real time face identification on RaspberryPi with MOVIDIUS stick.
 
 # Requirements
 - RaspberryPi 3 B+ (with rasbian stretch 20180629 model)
-- micro SD (up to 32Gb)
+- micro SD (more than 32Gb)
 - MOVIDIUS stick
 <a href="https://developer.movidius.com/" width="100"><img src="https://ncsuploads.movidius.com/images/made/images/remote/http_ncsuploads.movidius.com/general/95b5762864eba21d410dbe1ac7c6f3de/Buy_page_image_1000_474_85.jpg"></a>
-- python3.5
-- Opencv
+- python3.x
+- OpenCV
 - Tensorflow
 - PyQt5
 
@@ -21,8 +21,6 @@ $マークは、コマンドを入力したことを示すためにのみ使用�
 $ cd
 ```
 <a href="https://qiita.com/mt08/items/e8e8e728cf106ac83218">ラズパイ3にOpenCV3を簡単に導入</a>
-```shell
-```
 
 ## Tensorflow
 4,Aug,2018 official supported :(<a href="https://github.com/samjabrahams/tensorflow-on-raspberry-pi">github.com/samjabrahams/tensorflow-on-raspberry-pi</a>)
@@ -70,6 +68,7 @@ $ sudo make install
 $ cd
 (goto your working directory)
 ```
+
 
 
 ## FaceRecToPi
