@@ -66,19 +66,27 @@ class App:
         font.setBold(True)
         self.top_name = QLabel()
         self.top_name.setFont(font)
+        font.setPointSize(20)
         self.sec_name = QLabel()
+        self.sec_name.setFont(font)
+        font.setPointSize(15)
         self.thr_name = QLabel()
+        self.thr_name.setFont(font)
 
         self.top_prop = QLabel()
         self.sec_prop = QLabel()
         self.thr_prop = QLabel()
-        green = QLabel("1")
-        yegre = QLabel("2")
-        yelow = QLabel("3")
-        green.setStyleSheet("background-color:#55BB55;")
-        yegre.setStyleSheet("background-color:#99BB55;")
-        yelow.setStyleSheet("background-color:#AAAA11;")
-        sizepolicy_color = green.sizePolicy()
+        first_person = QLabel("1")
+        secnd_person = QLabel("2")
+        third_person = QLabel("3")
+        color = {"lightgreen":"55BB55", "dodome":"AA9955",
+                 "brown":"BB8833", "goldenrod":"DAA520",
+                 "chocolate":"D2691E", "orange":"FFA500",
+        }
+        first_person.setStyleSheet("background-color:#"+color["lightgreen"]+";")
+        secnd_person.setStyleSheet("background-color:#"+color["goldenrod"]+";")
+        third_person.setStyleSheet("background-color:#"+color["chocolate"]+";")
+        sizepolicy_color = first_person.sizePolicy()
         sizepolicy_label = self.top_name.sizePolicy()
         # 1:9 の比率でlabelを配置
         sizepolicy_color.setHorizontalStretch(1)
@@ -86,20 +94,20 @@ class App:
         self.top_name.setSizePolicy(sizepolicy_label)
         self.sec_name.setSizePolicy(sizepolicy_label)
         self.thr_name.setSizePolicy(sizepolicy_label)
-        green.setSizePolicy(sizepolicy_color)
-        yegre.setSizePolicy(sizepolicy_color)
-        yelow.setSizePolicy(sizepolicy_color)
+        first_person.setSizePolicy(sizepolicy_color)
+        secnd_person.setSizePolicy(sizepolicy_color)
+        third_person.setSizePolicy(sizepolicy_color)
         
 
-        self.fret=False
-        shot_button = QPushButton()
-        shot_button.setText('さつえい')
-        shot_button.clicked.connect(self.text2filename)
-        shot_button.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
-        drop_button = QPushButton()
-        drop_button.setText('さつえい')
-        drop_button.clicked.connect(self.drop2filename)
-        drop_button.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
+        # self.fret=False
+        # shot_button = QPushButton()
+        # shot_button.setText('さつえい')
+        # shot_button.clicked.connect(self.text2filename)
+        # shot_button.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
+        # drop_button = QPushButton()
+        # drop_button.setText('さつえい')
+        # drop_button.clicked.connect(self.drop2filename)
+        # drop_button.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         # Layput Boxes Design
         # QVBox QHBox QGrid
@@ -114,9 +122,9 @@ class App:
         # name_layer2.addWidget(self.thr_name)
         # name_layer2.addWidget(self.thr_prop)
         name_layout = QGridLayout()
-        name_layout.addWidget(green, 0,0)
-        name_layout.addWidget(yegre, 1,0)
-        name_layout.addWidget(yelow, 2,0)
+        name_layout.addWidget(first_person, 0,0)
+        name_layout.addWidget(secnd_person, 1,0)
+        name_layout.addWidget(third_person, 2,0)
         #name_layout.addLayout(name_layer0, 0,1)
         #name_layout.addLayout(name_layer1, 1,1)
         #name_layout.addLayout(name_layer2, 2,1)
@@ -127,97 +135,98 @@ class App:
         name_layout.addWidget(self.sec_prop, 1,2)
         name_layout.addWidget(self.thr_prop, 2,2)
 
-        self.dropdown_init()
-        input_layer = QGridLayout()
-        input_layer.addWidget(QLabel("なまえ にゅうりょく"), 0,0)
-        input_layer.addWidget(self.textbox, 0,1)
-        input_layer.addWidget(shot_button, 0,2)
-        input_layer.addWidget(QLabel("なまえ せんたく"), 1,0)
-        input_layer.addWidget(self.dropdown, 1,1)
-        input_layer.addWidget(drop_button, 1,2)
-        # input_layer.addLayout(input_slayer, alignment=(Qt.AlignCenter))
+        # self.dropdown_init()
+        # input_layer = QGridLayout()
+        # input_layer.addWidget(QLabel("なまえ にゅうりょく"), 0,0)
+        # input_layer.addWidget(self.textbox, 0,1)
+        # input_layer.addWidget(shot_button, 0,2)
+        # input_layer.addWidget(QLabel("なまえ せんたく"), 1,0)
+        # input_layer.addWidget(self.dropdown, 1,1)
+        # input_layer.addWidget(drop_button, 1,2)
+        # # input_layer.addLayout(input_slayer, alignment=(Qt.AlignCenter))
 
-        self.output_message = QLabel()
-        input_layout = QVBoxLayout()
-        input_layout.addLayout(input_layer)
-        input_layout.addWidget(self.output_message)
+        # self.output_message = QLabel()
+        # input_layout = QVBoxLayout()
+        # input_layout.addLayout(input_layer)
+        # input_layout.addWidget(self.output_message)
         
-        main_layout = QGridLayout()        
-        main_layout.addWidget(self.caped_image, 0,0)
-        main_layout.addLayout(name_layout, 0,1)
-        main_layout.addWidget(self.colored_label, 1,0)
-        main_layout.addWidget(self.croped_image, 1,0, alignment=(Qt.AlignCenter))
+        main_layout = QGridLayout()
+        # main_layout.addWidget(self.caped_image, 0,0)
+        main_layout.addLayout(name_layout, 0,0)
+        # main_layout.addWidget(self.colored_label, 1,0)
+        # main_layout.addWidget(self.croped_image, 1,0, alignment=(Qt.AlignCenter))
 
-        main_layout.addLayout(input_layout, 1,1)
+        # main_layout.addLayout(input_layout, 1,1)
         
         self.window.setLayout(main_layout)
 
-    def dropdown_init(self):
-        self.dropdown = QComboBox()
-        self.dropdown.addItem("----")
-        self.drop_list = []
-        for i in self.f_net.input_image_filename_list:
-            name = i.split("/")[-1].split("_")[0]
-            if name not in self.drop_list:
-                self.drop_list.append(name)
-                self.dropdown.addItem(name)
-        self.dropdown.activated[str].connect(self.drop_text)
-        self.droptext = ""
+    # def dropdown_init(self):
+    #     self.dropdown = QComboBox()
+    #     self.dropdown.addItem("----")
+    #     self.drop_list = []
+    #     for i in self.f_net.input_image_filename_list:
+    #         name = i.split("/")[-1].split("_")[0]
+    #         if name not in self.drop_list:
+    #             self.drop_list.append(name)
+    #             self.dropdown.addItem(name)
+    #     self.dropdown.activated[str].connect(self.drop_text)
+    #     self.droptext = ""
 
-    def drop_text(self, text):
-        self.droptext = self.dropdown.currentText()
-        if self.droptext == "----":
-            self.droptext = ""
+    # def drop_text(self, text):
+    #     self.droptext = self.dropdown.currentText()
+    #     if self.droptext == "----":
+    #         self.droptext = ""
 
         
-    def text2filename(self):
-        self.filename = self.textbox.text()
-        # 魔法のことばの入力で別の関数を呼び出す。
-        # データの削除関数を呼び出す。
-        if self.filename == "せんたくしたデータをさくじょ":
-            if self.droptext == "":
-                # 選ばれていない場合なにもしない。(めっせーじを空にする)
-                self.output_message.setText("")
-                return 0
+    # def text2filename(self):
+    #     self.filename = self.textbox.text()
+    #     # 魔法のことばの入力で別の関数を呼び出す。
+    #     # データの削除関数を呼び出す。
+    #     if self.filename == "せんたくしたデータをさくじょ":
+    #         if self.droptext == "":
+    #             # 選ばれていない場合なにもしない。(めっせーじを空にする)
+    #             self.output_message.setText("")
+    #             return 0
             
-            rmdir = self.f_net.IMAGES_DIR
-            rmname = self.droptext
-            rmdatapath = os.path.join(rmdir, rmname)
-            print(rmdatapath)
-            os.system("rm "+rmdatapath+"*")
-            self.output_message.setText(rmdatapath + "* さくじょ しました")
-        else:
-            #self.dropdown.addItem(self.filename)
-            if len(self.filename) <= 10:
-                if self.filename not in self.drop_list:
-                    self.drop_list.append(self.filename)
-                    self.dropdown.addItem(self.filename)
-            self.clip(self)
+    #         rmdir = self.f_net.IMAGES_DIR
+    #         rmname = self.droptext
+    #         rmdatapath = os.path.join(rmdir, rmname)
+    #         print(rmdatapath)
+    #         os.system("rm "+rmdatapath+"*")
+    #         os.system("rm "+self.f_net.PKL_PATH)
+    #         self.output_message.setText(rmdatapath + "* さくじょ しました")
+    #     else:
+    #         #self.dropdown.addItem(self.filename)
+    #         if len(self.filename) <= 10:
+    #             if self.filename not in self.drop_list:
+    #                 self.drop_list.append(self.filename)
+    #                 self.dropdown.addItem(self.filename)
+    #         self.clip(self)
             
-    def drop2filename(self):
-        self.filename = self.droptext
-        self.clip(self)
+    # def drop2filename(self):
+    #     self.filename = self.droptext
+    #     self.clip(self)
         
-    def clip(self, _):
-        if self.filename == "":
-            self.output_message.setText("なまえ が ありません。")
-            return 0
-        elif len(self.filename) > 10:
-            self.output_message.setText("なまえ が ながすぎます。(10もじまで)")
-            return 0
-        if self.fret:
-            self.fret = False
-            # self.corename = self.filename
-            savename =("./Img/" + self.filename + "_" + time.strftime("%Y%m%d_%H%M%S") + ".jpg")
-            cv2.imwrite(savename, cv2.cvtColor(self.face_frame, cv2.COLOR_RGB2BGR))        
-            self.f_net.new_emb(savename)
-            # 背景の色をかえる
-            self.colored_label.setStyleSheet("background-color:#33AA55;")
-            # 保存した名前を表示する
-            message = "save:" + savename
-        else:
-            message = "あたらしい かお が みつかりません。"
-        self.output_message.setText(message)
+    # def clip(self, _):
+    #     if self.filename == "":
+    #         self.output_message.setText("なまえ が ありません。")
+    #         return 0
+    #     elif len(self.filename) > 10:
+    #         self.output_message.setText("なまえ が ながすぎます。(10もじまで)")
+    #         return 0
+    #     if self.fret:
+    #         self.fret = False
+    #         # self.corename = self.filename
+    #         savename =("./Img/" + self.filename + "_" + time.strftime("%Y%m%d_%H%M%S") + ".jpg")
+    #         cv2.imwrite(savename, cv2.cvtColor(self.face_frame, cv2.COLOR_RGB2BGR))        
+    #         self.f_net.new_emb(savename)
+    #         # 背景の色をかえる
+    #         self.colored_label.setStyleSheet("background-color:#33AA55;")
+    #         # 保存した名前を表示する
+    #         message = "save:" + savename
+    #     else:
+    #         message = "あたらしい かお が みつかりません。"
+    #     self.output_message.setText(message)
 
         
     def update(self):
