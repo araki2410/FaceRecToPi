@@ -5,10 +5,10 @@ Real time face identification on RaspberryPi with MOVIDIUS stick.
 - RaspberryPi 3 B+ (with rasbian stretch 20180629 model)
 - micro SD (up to 32Gb)
 - MOVIDIUS stick
-<a href="https://developer.movidius.com/"><img src="https://ncsuploads.movidius.com/images/made/images/remote/http_ncsuploads.movidius.com/general/95b5762864eba21d410dbe1ac7c6f3de/Buy_page_image_1000_474_85.jpg"></a>
+<a href="https://developer.movidius.com/" width="200px"><img src="https://ncsuploads.movidius.com/images/made/images/remote/http_ncsuploads.movidius.com/general/95b5762864eba21d410dbe1ac7c6f3de/Buy_page_image_1000_474_85.jpg"></a>
 - python3.5
 - Opencv
-- tensorflow
+- Tensorflow
 - PyQt5
 
 # Install
@@ -25,18 +25,20 @@ $ cd
 ```
 
 ## Tensorflow
-(cd your favorite dir)
+4,Aug,2018 official supported :(<a href="https://github.com/samjabrahams/tensorflow-on-raspberry-pi">github.com/samjabrahams/tensorflow-on-raspberry-pi</a>)
 ```shell
-$ cd
+$ sudo apt install libatlas-base-dev
+$ pip3 install tensorflow
 ```
-<a href="https://github.com/samjabrahams/tensorflow-on-raspberry-pi">github.com/samjabrahams/tensorflow-on-raspberry-pi</a>
+refarence of how to install tensorflow before official supported.
 
-<a href="https://qiita.com/ekzemplaro/items/553db4c229632af79607">Raspberry Pi に python3 用の　tensorflow をインストール</a>
-```shell
-```
+pipできなかった頃参考してたもの.
+
+- <a href="https://qiita.com/ekzemplaro/items/553db4c229632af79607">Raspberry Pi に python3 用の　tensorflow をインストール</a>
+- <a href="https://github.com/samjabrahams/tensorflow-on-raspberry-pi/blob/master/old_readme.md">tensorflow-on-raspberry-pi README</a>
 
 ## PyQt5
- <a href="https://tomosoft.jp/design/?p=10991">PyQt5をRaspberry Pi「stretch」にインストール</a>
+参考 <a href="https://tomosoft.jp/design/?p=10991">PyQt5をRaspberry Pi「stretch」にインストール</a>
  
 pyqt5 default
 ```shell
