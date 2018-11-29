@@ -9,9 +9,7 @@ Real time face identification on RaspberryPi with MOVIDIUS stick.
 - python3.5
 - Opencv
 - tensorflow
-
--PyQt
-<>
+- PyQt5
 
 # Install
 The $ mark is only used to indicate that you typed the command, so you do not hit it in practice.
@@ -36,6 +34,42 @@ $ cd
 <a href="https://qiita.com/ekzemplaro/items/553db4c229632af79607">Raspberry Pi に python3 用の　tensorflow をインストール</a>
 ```shell
 ```
+
+## PyQt5
+ <a href="https://tomosoft.jp/design/?p=10991">PyQt5をRaspberry Pi「stretch」にインストール</a>
+ 
+pyqt5 default
+```shell
+$ sudo apt-get install qt5-default
+```
+
+Download sip from <a href="https://sourceforge.net/projects/pyqt/files/sip/">PyQt sip</a> . 
+(Checked version: sip-4.19.8 / 29,11,2018)
+```shell
+$ tar -zxvf sip-4.19.8.tar.gz
+(or unzip)
+$ cd sip-4.19.8
+$ python3 configure.py　
+$ make
+$ sudo make install
+$ cd
+(goto your working directory)
+```
+
+Download PyQt5 from <a href="https://sourceforge.net/projects/pyqt/files/PyQt5/">PyQt PyQt5</a> . 
+(Checked version: PyQt-5.10.1 / 29,11,2018)
+```shell
+$ tar -zxvf PyQt5_gpl-5.10.1.tar.gz
+(or unzip)
+$ cd PyQt5_gpl-5.10.1.tar.gz
+$ python3 configure.py
+$ make
+$ sudo make install
+$ cd
+(goto your working directory)
+```
+
+
 ## FaceRecToPi
 (cd your favorite dir)
 ```shell
