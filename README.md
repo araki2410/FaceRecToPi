@@ -1,6 +1,8 @@
 # Released!
 This junk is Released [ArakiNet](https://github.com/araki2410/ArakiNet).
 
+This software is released under the MIT License, see LICENSE.
+
 21 Mar, 2019
 
 # sudo raspi-config
