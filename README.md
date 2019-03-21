@@ -1,4 +1,7 @@
+# Released!
 This junk is Released [ArakiNet](https://github.com/araki2410/ArakiNet).
+
+21 Mar, 2019
 
 # sudo raspi-config
 > interfacing option -> camera -> camera enable
